@@ -1,0 +1,25 @@
+// File generated from our OpenAPI spec by Stainless.
+
+package com.zavudev.api.services.blocking
+
+import com.zavudev.api.client.okhttp.ZavudevOkHttpClient
+import com.zavudev.api.models.introspect.IntrospectValidatePhoneParams
+import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Test
+
+internal class IntrospectServiceTest {
+
+    @Disabled("Mock server tests are disabled")
+    @Test
+    fun validatePhone() {
+        val client = ZavudevOkHttpClient.builder().apiKey("My API Key").build()
+        val introspectService = client.introspect()
+
+        val response =
+            introspectService.validatePhone(
+                IntrospectValidatePhoneParams.builder().phoneNumber("+56912345678").build()
+            )
+
+        response.validate()
+    }
+}
