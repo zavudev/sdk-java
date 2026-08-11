@@ -17,6 +17,23 @@ internal class FunctionDeployParamsTest {
                     .putAdditionalProperty("foo", JsonValue.from("string"))
                     .build()
             )
+            .entrypoint("index.ts")
+            .files(
+                FunctionDeployParams.Files.builder()
+                    .putAdditionalProperty(
+                        "index.ts",
+                        JsonValue.from(
+                            "import { formatOrder } from './lib/orders';\n\nexport default async function handler(event) {\n  return { statusCode: 200, body: formatOrder(event) };\n}\n"
+                        ),
+                    )
+                    .putAdditionalProperty(
+                        "lib/orders.ts",
+                        JsonValue.from(
+                            "export function formatOrder(event) {\n  return JSON.stringify(event);\n}\n"
+                        ),
+                    )
+                    .build()
+            )
             .sourceCode("sourceCode")
             .build()
     }
@@ -40,6 +57,23 @@ internal class FunctionDeployParamsTest {
                         .putAdditionalProperty("foo", JsonValue.from("string"))
                         .build()
                 )
+                .entrypoint("index.ts")
+                .files(
+                    FunctionDeployParams.Files.builder()
+                        .putAdditionalProperty(
+                            "index.ts",
+                            JsonValue.from(
+                                "import { formatOrder } from './lib/orders';\n\nexport default async function handler(event) {\n  return { statusCode: 200, body: formatOrder(event) };\n}\n"
+                            ),
+                        )
+                        .putAdditionalProperty(
+                            "lib/orders.ts",
+                            JsonValue.from(
+                                "export function formatOrder(event) {\n  return JSON.stringify(event);\n}\n"
+                            ),
+                        )
+                        .build()
+                )
                 .sourceCode("sourceCode")
                 .build()
 
@@ -49,6 +83,24 @@ internal class FunctionDeployParamsTest {
             .contains(
                 FunctionDeployParams.Dependencies.builder()
                     .putAdditionalProperty("foo", JsonValue.from("string"))
+                    .build()
+            )
+        assertThat(body.entrypoint()).contains("index.ts")
+        assertThat(body.files())
+            .contains(
+                FunctionDeployParams.Files.builder()
+                    .putAdditionalProperty(
+                        "index.ts",
+                        JsonValue.from(
+                            "import { formatOrder } from './lib/orders';\n\nexport default async function handler(event) {\n  return { statusCode: 200, body: formatOrder(event) };\n}\n"
+                        ),
+                    )
+                    .putAdditionalProperty(
+                        "lib/orders.ts",
+                        JsonValue.from(
+                            "export function formatOrder(event) {\n  return JSON.stringify(event);\n}\n"
+                        ),
+                    )
                     .build()
             )
         assertThat(body.sourceCode()).contains("sourceCode")
