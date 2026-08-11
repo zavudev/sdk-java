@@ -17,6 +17,23 @@ internal class FunctionUpdateParamsTest {
                     .putAdditionalProperty("foo", JsonValue.from("string"))
                     .build()
             )
+            .entrypoint("index.ts")
+            .files(
+                FunctionUpdateParams.Files.builder()
+                    .putAdditionalProperty(
+                        "index.ts",
+                        JsonValue.from(
+                            "import { formatOrder } from './lib/orders';\n\nexport default async function handler(event) {\n  return { statusCode: 200, body: formatOrder(event) };\n}\n"
+                        ),
+                    )
+                    .putAdditionalProperty(
+                        "lib/orders.ts",
+                        JsonValue.from(
+                            "export function formatOrder(event) {\n  return JSON.stringify(event);\n}\n"
+                        ),
+                    )
+                    .build()
+            )
             .httpEnabled(true)
             .sourceCode("sourceCode")
             .build()
@@ -41,6 +58,23 @@ internal class FunctionUpdateParamsTest {
                         .putAdditionalProperty("foo", JsonValue.from("string"))
                         .build()
                 )
+                .entrypoint("index.ts")
+                .files(
+                    FunctionUpdateParams.Files.builder()
+                        .putAdditionalProperty(
+                            "index.ts",
+                            JsonValue.from(
+                                "import { formatOrder } from './lib/orders';\n\nexport default async function handler(event) {\n  return { statusCode: 200, body: formatOrder(event) };\n}\n"
+                            ),
+                        )
+                        .putAdditionalProperty(
+                            "lib/orders.ts",
+                            JsonValue.from(
+                                "export function formatOrder(event) {\n  return JSON.stringify(event);\n}\n"
+                            ),
+                        )
+                        .build()
+                )
                 .httpEnabled(true)
                 .sourceCode("sourceCode")
                 .build()
@@ -51,6 +85,24 @@ internal class FunctionUpdateParamsTest {
             .contains(
                 FunctionUpdateParams.Dependencies.builder()
                     .putAdditionalProperty("foo", JsonValue.from("string"))
+                    .build()
+            )
+        assertThat(body.entrypoint()).contains("index.ts")
+        assertThat(body.files())
+            .contains(
+                FunctionUpdateParams.Files.builder()
+                    .putAdditionalProperty(
+                        "index.ts",
+                        JsonValue.from(
+                            "import { formatOrder } from './lib/orders';\n\nexport default async function handler(event) {\n  return { statusCode: 200, body: formatOrder(event) };\n}\n"
+                        ),
+                    )
+                    .putAdditionalProperty(
+                        "lib/orders.ts",
+                        JsonValue.from(
+                            "export function formatOrder(event) {\n  return JSON.stringify(event);\n}\n"
+                        ),
+                    )
                     .build()
             )
         assertThat(body.httpEnabled()).contains(true)
