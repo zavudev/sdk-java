@@ -43,6 +43,7 @@ private constructor(
     private val mediaUrl: JsonField<String>,
     private val mimeType: JsonField<String>,
     private val reactToMessageId: JsonField<String>,
+    private val referral: JsonField<Referral>,
     private val replyToFrom: JsonField<String>,
     private val replyToMessageId: JsonField<String>,
     private val replyToMessageType: JsonField<String>,
@@ -99,6 +100,7 @@ private constructor(
         @JsonProperty("reactToMessageId")
         @ExcludeMissing
         reactToMessageId: JsonField<String> = JsonMissing.of(),
+        @JsonProperty("referral") @ExcludeMissing referral: JsonField<Referral> = JsonMissing.of(),
         @JsonProperty("replyToFrom")
         @ExcludeMissing
         replyToFrom: JsonField<String> = JsonMissing.of(),
@@ -149,6 +151,7 @@ private constructor(
         mediaUrl,
         mimeType,
         reactToMessageId,
+        referral,
         replyToFrom,
         replyToMessageId,
         replyToMessageType,
@@ -316,6 +319,22 @@ private constructor(
      *   server responded with an unexpected value).
      */
     fun reactToMessageId(): Optional<String> = reactToMessageId.getOptional("reactToMessageId")
+
+    /**
+     * Click-to-WhatsApp (CTWA) ad attribution: where an inbound conversation came from.
+     *
+     * WhatsApp only. Present on the **first inbound message** of a conversation opened from a Meta
+     * ad or post, and on no message after it — so store it when it arrives rather than expecting it
+     * again. Organic conversations never carry it.
+     *
+     * Field names are camelCased to match the rest of this API; Meta sends them as snake_case
+     * (`ctwa_clid`, `source_id`, ...). Fields that do not apply are omitted: a `post` source has no
+     * click id, and an image ad has no `videoUrl`.
+     *
+     * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
+     *   server responded with an unexpected value).
+     */
+    fun referral(): Optional<Referral> = referral.getOptional("referral")
 
     /**
      * Sender of the quoted message (phone number in E.164 format).
@@ -571,6 +590,13 @@ private constructor(
     fun _reactToMessageId(): JsonField<String> = reactToMessageId
 
     /**
+     * Returns the raw JSON value of [referral].
+     *
+     * Unlike [referral], this method doesn't throw if the JSON field has an unexpected type.
+     */
+    @JsonProperty("referral") @ExcludeMissing fun _referral(): JsonField<Referral> = referral
+
+    /**
      * Returns the raw JSON value of [replyToFrom].
      *
      * Unlike [replyToFrom], this method doesn't throw if the JSON field has an unexpected type.
@@ -698,6 +724,7 @@ private constructor(
         private var mediaUrl: JsonField<String> = JsonMissing.of()
         private var mimeType: JsonField<String> = JsonMissing.of()
         private var reactToMessageId: JsonField<String> = JsonMissing.of()
+        private var referral: JsonField<Referral> = JsonMissing.of()
         private var replyToFrom: JsonField<String> = JsonMissing.of()
         private var replyToMessageId: JsonField<String> = JsonMissing.of()
         private var replyToMessageType: JsonField<String> = JsonMissing.of()
@@ -731,6 +758,7 @@ private constructor(
             mediaUrl = messageContent.mediaUrl
             mimeType = messageContent.mimeType
             reactToMessageId = messageContent.reactToMessageId
+            referral = messageContent.referral
             replyToFrom = messageContent.replyToFrom
             replyToMessageId = messageContent.replyToMessageId
             replyToMessageType = messageContent.replyToMessageType
@@ -1017,6 +1045,28 @@ private constructor(
             this.reactToMessageId = reactToMessageId
         }
 
+        /**
+         * Click-to-WhatsApp (CTWA) ad attribution: where an inbound conversation came from.
+         *
+         * WhatsApp only. Present on the **first inbound message** of a conversation opened from a
+         * Meta ad or post, and on no message after it — so store it when it arrives rather than
+         * expecting it again. Organic conversations never carry it.
+         *
+         * Field names are camelCased to match the rest of this API; Meta sends them as snake_case
+         * (`ctwa_clid`, `source_id`, ...). Fields that do not apply are omitted: a `post` source
+         * has no click id, and an image ad has no `videoUrl`.
+         */
+        fun referral(referral: Referral) = referral(JsonField.of(referral))
+
+        /**
+         * Sets [Builder.referral] to an arbitrary JSON value.
+         *
+         * You should usually call [Builder.referral] with a well-typed [Referral] value instead.
+         * This method is primarily for setting the field to an undocumented or not yet supported
+         * value.
+         */
+        fun referral(referral: JsonField<Referral>) = apply { this.referral = referral }
+
         /** Sender of the quoted message (phone number in E.164 format). */
         fun replyToFrom(replyToFrom: String) = replyToFrom(JsonField.of(replyToFrom))
 
@@ -1249,6 +1299,7 @@ private constructor(
                 mediaUrl,
                 mimeType,
                 reactToMessageId,
+                referral,
                 replyToFrom,
                 replyToMessageId,
                 replyToMessageType,
@@ -1297,6 +1348,7 @@ private constructor(
         mediaUrl()
         mimeType()
         reactToMessageId()
+        referral().ifPresent { it.validate() }
         replyToFrom()
         replyToMessageId()
         replyToMessageType()
@@ -1344,6 +1396,7 @@ private constructor(
             (if (mediaUrl.asKnown().isPresent) 1 else 0) +
             (if (mimeType.asKnown().isPresent) 1 else 0) +
             (if (reactToMessageId.asKnown().isPresent) 1 else 0) +
+            (referral.asKnown().getOrNull()?.validity() ?: 0) +
             (if (replyToFrom.asKnown().isPresent) 1 else 0) +
             (if (replyToMessageId.asKnown().isPresent) 1 else 0) +
             (if (replyToMessageType.asKnown().isPresent) 1 else 0) +
@@ -1904,6 +1957,831 @@ private constructor(
         override fun hashCode() = value.hashCode()
 
         override fun toString() = value.toString()
+    }
+
+    /**
+     * Click-to-WhatsApp (CTWA) ad attribution: where an inbound conversation came from.
+     *
+     * WhatsApp only. Present on the **first inbound message** of a conversation opened from a Meta
+     * ad or post, and on no message after it — so store it when it arrives rather than expecting it
+     * again. Organic conversations never carry it.
+     *
+     * Field names are camelCased to match the rest of this API; Meta sends them as snake_case
+     * (`ctwa_clid`, `source_id`, ...). Fields that do not apply are omitted: a `post` source has no
+     * click id, and an image ad has no `videoUrl`.
+     */
+    class Referral
+    @JsonCreator(mode = JsonCreator.Mode.DISABLED)
+    private constructor(
+        private val body: JsonField<String>,
+        private val ctwaClid: JsonField<String>,
+        private val headline: JsonField<String>,
+        private val imageUrl: JsonField<String>,
+        private val mediaType: JsonField<MediaType>,
+        private val sourceId: JsonField<String>,
+        private val sourceType: JsonField<SourceType>,
+        private val sourceUrl: JsonField<String>,
+        private val thumbnailUrl: JsonField<String>,
+        private val videoUrl: JsonField<String>,
+        private val additionalProperties: MutableMap<String, JsonValue>,
+    ) {
+
+        @JsonCreator
+        private constructor(
+            @JsonProperty("body") @ExcludeMissing body: JsonField<String> = JsonMissing.of(),
+            @JsonProperty("ctwaClid")
+            @ExcludeMissing
+            ctwaClid: JsonField<String> = JsonMissing.of(),
+            @JsonProperty("headline")
+            @ExcludeMissing
+            headline: JsonField<String> = JsonMissing.of(),
+            @JsonProperty("imageUrl")
+            @ExcludeMissing
+            imageUrl: JsonField<String> = JsonMissing.of(),
+            @JsonProperty("mediaType")
+            @ExcludeMissing
+            mediaType: JsonField<MediaType> = JsonMissing.of(),
+            @JsonProperty("sourceId")
+            @ExcludeMissing
+            sourceId: JsonField<String> = JsonMissing.of(),
+            @JsonProperty("sourceType")
+            @ExcludeMissing
+            sourceType: JsonField<SourceType> = JsonMissing.of(),
+            @JsonProperty("sourceUrl")
+            @ExcludeMissing
+            sourceUrl: JsonField<String> = JsonMissing.of(),
+            @JsonProperty("thumbnailUrl")
+            @ExcludeMissing
+            thumbnailUrl: JsonField<String> = JsonMissing.of(),
+            @JsonProperty("videoUrl") @ExcludeMissing videoUrl: JsonField<String> = JsonMissing.of(),
+        ) : this(
+            body,
+            ctwaClid,
+            headline,
+            imageUrl,
+            mediaType,
+            sourceId,
+            sourceType,
+            sourceUrl,
+            thumbnailUrl,
+            videoUrl,
+            mutableMapOf(),
+        )
+
+        /**
+         * Body copy of the ad or post.
+         *
+         * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
+         *   server responded with an unexpected value).
+         */
+        fun body(): Optional<String> = body.getOptional("body")
+
+        /**
+         * Click-to-WhatsApp click identifier. This is the value Meta's Conversions API needs to
+         * credit a conversion back to the ad that produced the conversation. Present on `ad`
+         * sources; a `post` source has none.
+         *
+         * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
+         *   server responded with an unexpected value).
+         */
+        fun ctwaClid(): Optional<String> = ctwaClid.getOptional("ctwaClid")
+
+        /**
+         * Headline of the ad or post.
+         *
+         * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
+         *   server responded with an unexpected value).
+         */
+        fun headline(): Optional<String> = headline.getOptional("headline")
+
+        /**
+         * Image of the ad. Present when `mediaType` is `image`.
+         *
+         * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
+         *   server responded with an unexpected value).
+         */
+        fun imageUrl(): Optional<String> = imageUrl.getOptional("imageUrl")
+
+        /**
+         * Type of media on the ad, when it had any.
+         *
+         * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
+         *   server responded with an unexpected value).
+         */
+        fun mediaType(): Optional<MediaType> = mediaType.getOptional("mediaType")
+
+        /**
+         * Identifier of the ad or post that produced the click.
+         *
+         * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
+         *   server responded with an unexpected value).
+         */
+        fun sourceId(): Optional<String> = sourceId.getOptional("sourceId")
+
+        /**
+         * Where the click came from.
+         *
+         * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
+         *   server responded with an unexpected value).
+         */
+        fun sourceType(): Optional<SourceType> = sourceType.getOptional("sourceType")
+
+        /**
+         * Meta permalink to the ad or post.
+         *
+         * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
+         *   server responded with an unexpected value).
+         */
+        fun sourceUrl(): Optional<String> = sourceUrl.getOptional("sourceUrl")
+
+        /**
+         * Thumbnail of the ad media.
+         *
+         * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
+         *   server responded with an unexpected value).
+         */
+        fun thumbnailUrl(): Optional<String> = thumbnailUrl.getOptional("thumbnailUrl")
+
+        /**
+         * Video of the ad. Present when `mediaType` is `video`.
+         *
+         * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
+         *   server responded with an unexpected value).
+         */
+        fun videoUrl(): Optional<String> = videoUrl.getOptional("videoUrl")
+
+        /**
+         * Returns the raw JSON value of [body].
+         *
+         * Unlike [body], this method doesn't throw if the JSON field has an unexpected type.
+         */
+        @JsonProperty("body") @ExcludeMissing fun _body(): JsonField<String> = body
+
+        /**
+         * Returns the raw JSON value of [ctwaClid].
+         *
+         * Unlike [ctwaClid], this method doesn't throw if the JSON field has an unexpected type.
+         */
+        @JsonProperty("ctwaClid") @ExcludeMissing fun _ctwaClid(): JsonField<String> = ctwaClid
+
+        /**
+         * Returns the raw JSON value of [headline].
+         *
+         * Unlike [headline], this method doesn't throw if the JSON field has an unexpected type.
+         */
+        @JsonProperty("headline") @ExcludeMissing fun _headline(): JsonField<String> = headline
+
+        /**
+         * Returns the raw JSON value of [imageUrl].
+         *
+         * Unlike [imageUrl], this method doesn't throw if the JSON field has an unexpected type.
+         */
+        @JsonProperty("imageUrl") @ExcludeMissing fun _imageUrl(): JsonField<String> = imageUrl
+
+        /**
+         * Returns the raw JSON value of [mediaType].
+         *
+         * Unlike [mediaType], this method doesn't throw if the JSON field has an unexpected type.
+         */
+        @JsonProperty("mediaType")
+        @ExcludeMissing
+        fun _mediaType(): JsonField<MediaType> = mediaType
+
+        /**
+         * Returns the raw JSON value of [sourceId].
+         *
+         * Unlike [sourceId], this method doesn't throw if the JSON field has an unexpected type.
+         */
+        @JsonProperty("sourceId") @ExcludeMissing fun _sourceId(): JsonField<String> = sourceId
+
+        /**
+         * Returns the raw JSON value of [sourceType].
+         *
+         * Unlike [sourceType], this method doesn't throw if the JSON field has an unexpected type.
+         */
+        @JsonProperty("sourceType")
+        @ExcludeMissing
+        fun _sourceType(): JsonField<SourceType> = sourceType
+
+        /**
+         * Returns the raw JSON value of [sourceUrl].
+         *
+         * Unlike [sourceUrl], this method doesn't throw if the JSON field has an unexpected type.
+         */
+        @JsonProperty("sourceUrl") @ExcludeMissing fun _sourceUrl(): JsonField<String> = sourceUrl
+
+        /**
+         * Returns the raw JSON value of [thumbnailUrl].
+         *
+         * Unlike [thumbnailUrl], this method doesn't throw if the JSON field has an unexpected
+         * type.
+         */
+        @JsonProperty("thumbnailUrl")
+        @ExcludeMissing
+        fun _thumbnailUrl(): JsonField<String> = thumbnailUrl
+
+        /**
+         * Returns the raw JSON value of [videoUrl].
+         *
+         * Unlike [videoUrl], this method doesn't throw if the JSON field has an unexpected type.
+         */
+        @JsonProperty("videoUrl") @ExcludeMissing fun _videoUrl(): JsonField<String> = videoUrl
+
+        @JsonAnySetter
+        private fun putAdditionalProperty(key: String, value: JsonValue) {
+            additionalProperties.put(key, value)
+        }
+
+        @JsonAnyGetter
+        @ExcludeMissing
+        fun _additionalProperties(): Map<String, JsonValue> =
+            Collections.unmodifiableMap(additionalProperties)
+
+        fun toBuilder() = Builder().from(this)
+
+        companion object {
+
+            /** Returns a mutable builder for constructing an instance of [Referral]. */
+            @JvmStatic fun builder() = Builder()
+        }
+
+        /** A builder for [Referral]. */
+        class Builder internal constructor() {
+
+            private var body: JsonField<String> = JsonMissing.of()
+            private var ctwaClid: JsonField<String> = JsonMissing.of()
+            private var headline: JsonField<String> = JsonMissing.of()
+            private var imageUrl: JsonField<String> = JsonMissing.of()
+            private var mediaType: JsonField<MediaType> = JsonMissing.of()
+            private var sourceId: JsonField<String> = JsonMissing.of()
+            private var sourceType: JsonField<SourceType> = JsonMissing.of()
+            private var sourceUrl: JsonField<String> = JsonMissing.of()
+            private var thumbnailUrl: JsonField<String> = JsonMissing.of()
+            private var videoUrl: JsonField<String> = JsonMissing.of()
+            private var additionalProperties: MutableMap<String, JsonValue> = mutableMapOf()
+
+            @JvmSynthetic
+            internal fun from(referral: Referral) = apply {
+                body = referral.body
+                ctwaClid = referral.ctwaClid
+                headline = referral.headline
+                imageUrl = referral.imageUrl
+                mediaType = referral.mediaType
+                sourceId = referral.sourceId
+                sourceType = referral.sourceType
+                sourceUrl = referral.sourceUrl
+                thumbnailUrl = referral.thumbnailUrl
+                videoUrl = referral.videoUrl
+                additionalProperties = referral.additionalProperties.toMutableMap()
+            }
+
+            /** Body copy of the ad or post. */
+            fun body(body: String) = body(JsonField.of(body))
+
+            /**
+             * Sets [Builder.body] to an arbitrary JSON value.
+             *
+             * You should usually call [Builder.body] with a well-typed [String] value instead. This
+             * method is primarily for setting the field to an undocumented or not yet supported
+             * value.
+             */
+            fun body(body: JsonField<String>) = apply { this.body = body }
+
+            /**
+             * Click-to-WhatsApp click identifier. This is the value Meta's Conversions API needs to
+             * credit a conversion back to the ad that produced the conversation. Present on `ad`
+             * sources; a `post` source has none.
+             */
+            fun ctwaClid(ctwaClid: String) = ctwaClid(JsonField.of(ctwaClid))
+
+            /**
+             * Sets [Builder.ctwaClid] to an arbitrary JSON value.
+             *
+             * You should usually call [Builder.ctwaClid] with a well-typed [String] value instead.
+             * This method is primarily for setting the field to an undocumented or not yet
+             * supported value.
+             */
+            fun ctwaClid(ctwaClid: JsonField<String>) = apply { this.ctwaClid = ctwaClid }
+
+            /** Headline of the ad or post. */
+            fun headline(headline: String) = headline(JsonField.of(headline))
+
+            /**
+             * Sets [Builder.headline] to an arbitrary JSON value.
+             *
+             * You should usually call [Builder.headline] with a well-typed [String] value instead.
+             * This method is primarily for setting the field to an undocumented or not yet
+             * supported value.
+             */
+            fun headline(headline: JsonField<String>) = apply { this.headline = headline }
+
+            /** Image of the ad. Present when `mediaType` is `image`. */
+            fun imageUrl(imageUrl: String) = imageUrl(JsonField.of(imageUrl))
+
+            /**
+             * Sets [Builder.imageUrl] to an arbitrary JSON value.
+             *
+             * You should usually call [Builder.imageUrl] with a well-typed [String] value instead.
+             * This method is primarily for setting the field to an undocumented or not yet
+             * supported value.
+             */
+            fun imageUrl(imageUrl: JsonField<String>) = apply { this.imageUrl = imageUrl }
+
+            /** Type of media on the ad, when it had any. */
+            fun mediaType(mediaType: MediaType) = mediaType(JsonField.of(mediaType))
+
+            /**
+             * Sets [Builder.mediaType] to an arbitrary JSON value.
+             *
+             * You should usually call [Builder.mediaType] with a well-typed [MediaType] value
+             * instead. This method is primarily for setting the field to an undocumented or not yet
+             * supported value.
+             */
+            fun mediaType(mediaType: JsonField<MediaType>) = apply { this.mediaType = mediaType }
+
+            /** Identifier of the ad or post that produced the click. */
+            fun sourceId(sourceId: String) = sourceId(JsonField.of(sourceId))
+
+            /**
+             * Sets [Builder.sourceId] to an arbitrary JSON value.
+             *
+             * You should usually call [Builder.sourceId] with a well-typed [String] value instead.
+             * This method is primarily for setting the field to an undocumented or not yet
+             * supported value.
+             */
+            fun sourceId(sourceId: JsonField<String>) = apply { this.sourceId = sourceId }
+
+            /** Where the click came from. */
+            fun sourceType(sourceType: SourceType) = sourceType(JsonField.of(sourceType))
+
+            /**
+             * Sets [Builder.sourceType] to an arbitrary JSON value.
+             *
+             * You should usually call [Builder.sourceType] with a well-typed [SourceType] value
+             * instead. This method is primarily for setting the field to an undocumented or not yet
+             * supported value.
+             */
+            fun sourceType(sourceType: JsonField<SourceType>) = apply {
+                this.sourceType = sourceType
+            }
+
+            /** Meta permalink to the ad or post. */
+            fun sourceUrl(sourceUrl: String) = sourceUrl(JsonField.of(sourceUrl))
+
+            /**
+             * Sets [Builder.sourceUrl] to an arbitrary JSON value.
+             *
+             * You should usually call [Builder.sourceUrl] with a well-typed [String] value instead.
+             * This method is primarily for setting the field to an undocumented or not yet
+             * supported value.
+             */
+            fun sourceUrl(sourceUrl: JsonField<String>) = apply { this.sourceUrl = sourceUrl }
+
+            /** Thumbnail of the ad media. */
+            fun thumbnailUrl(thumbnailUrl: String) = thumbnailUrl(JsonField.of(thumbnailUrl))
+
+            /**
+             * Sets [Builder.thumbnailUrl] to an arbitrary JSON value.
+             *
+             * You should usually call [Builder.thumbnailUrl] with a well-typed [String] value
+             * instead. This method is primarily for setting the field to an undocumented or not yet
+             * supported value.
+             */
+            fun thumbnailUrl(thumbnailUrl: JsonField<String>) = apply {
+                this.thumbnailUrl = thumbnailUrl
+            }
+
+            /** Video of the ad. Present when `mediaType` is `video`. */
+            fun videoUrl(videoUrl: String) = videoUrl(JsonField.of(videoUrl))
+
+            /**
+             * Sets [Builder.videoUrl] to an arbitrary JSON value.
+             *
+             * You should usually call [Builder.videoUrl] with a well-typed [String] value instead.
+             * This method is primarily for setting the field to an undocumented or not yet
+             * supported value.
+             */
+            fun videoUrl(videoUrl: JsonField<String>) = apply { this.videoUrl = videoUrl }
+
+            fun additionalProperties(additionalProperties: Map<String, JsonValue>) = apply {
+                this.additionalProperties.clear()
+                putAllAdditionalProperties(additionalProperties)
+            }
+
+            fun putAdditionalProperty(key: String, value: JsonValue) = apply {
+                additionalProperties.put(key, value)
+            }
+
+            fun putAllAdditionalProperties(additionalProperties: Map<String, JsonValue>) = apply {
+                this.additionalProperties.putAll(additionalProperties)
+            }
+
+            fun removeAdditionalProperty(key: String) = apply { additionalProperties.remove(key) }
+
+            fun removeAllAdditionalProperties(keys: Set<String>) = apply {
+                keys.forEach(::removeAdditionalProperty)
+            }
+
+            /**
+             * Returns an immutable instance of [Referral].
+             *
+             * Further updates to this [Builder] will not mutate the returned instance.
+             */
+            fun build(): Referral =
+                Referral(
+                    body,
+                    ctwaClid,
+                    headline,
+                    imageUrl,
+                    mediaType,
+                    sourceId,
+                    sourceType,
+                    sourceUrl,
+                    thumbnailUrl,
+                    videoUrl,
+                    additionalProperties.toMutableMap(),
+                )
+        }
+
+        private var validated: Boolean = false
+
+        /**
+         * Validates that the types of all values in this object match their expected types
+         * recursively.
+         *
+         * This method is _not_ forwards compatible with new types from the API for existing fields.
+         *
+         * @throws ZavudevInvalidDataException if any value type in this object doesn't match its
+         *   expected type.
+         */
+        fun validate(): Referral = apply {
+            if (validated) {
+                return@apply
+            }
+
+            body()
+            ctwaClid()
+            headline()
+            imageUrl()
+            mediaType().ifPresent { it.validate() }
+            sourceId()
+            sourceType().ifPresent { it.validate() }
+            sourceUrl()
+            thumbnailUrl()
+            videoUrl()
+            validated = true
+        }
+
+        fun isValid(): Boolean =
+            try {
+                validate()
+                true
+            } catch (e: ZavudevInvalidDataException) {
+                false
+            }
+
+        /**
+         * Returns a score indicating how many valid values are contained in this object
+         * recursively.
+         *
+         * Used for best match union deserialization.
+         */
+        @JvmSynthetic
+        internal fun validity(): Int =
+            (if (body.asKnown().isPresent) 1 else 0) +
+                (if (ctwaClid.asKnown().isPresent) 1 else 0) +
+                (if (headline.asKnown().isPresent) 1 else 0) +
+                (if (imageUrl.asKnown().isPresent) 1 else 0) +
+                (mediaType.asKnown().getOrNull()?.validity() ?: 0) +
+                (if (sourceId.asKnown().isPresent) 1 else 0) +
+                (sourceType.asKnown().getOrNull()?.validity() ?: 0) +
+                (if (sourceUrl.asKnown().isPresent) 1 else 0) +
+                (if (thumbnailUrl.asKnown().isPresent) 1 else 0) +
+                (if (videoUrl.asKnown().isPresent) 1 else 0)
+
+        /** Type of media on the ad, when it had any. */
+        class MediaType @JsonCreator private constructor(private val value: JsonField<String>) :
+            Enum {
+
+            /**
+             * Returns this class instance's raw value.
+             *
+             * This is usually only useful if this instance was deserialized from data that doesn't
+             * match any known member, and you want to know that value. For example, if the SDK is
+             * on an older version than the API, then the API may respond with new members that the
+             * SDK is unaware of.
+             */
+            @com.fasterxml.jackson.annotation.JsonValue fun _value(): JsonField<String> = value
+
+            companion object {
+
+                @JvmField val IMAGE = of("image")
+
+                @JvmField val VIDEO = of("video")
+
+                @JvmStatic fun of(value: String) = MediaType(JsonField.of(value))
+            }
+
+            /** An enum containing [MediaType]'s known values. */
+            enum class Known {
+                IMAGE,
+                VIDEO,
+            }
+
+            /**
+             * An enum containing [MediaType]'s known values, as well as an [_UNKNOWN] member.
+             *
+             * An instance of [MediaType] can contain an unknown value in a couple of cases:
+             * - It was deserialized from data that doesn't match any known member. For example, if
+             *   the SDK is on an older version than the API, then the API may respond with new
+             *   members that the SDK is unaware of.
+             * - It was constructed with an arbitrary value using the [of] method.
+             */
+            enum class Value {
+                IMAGE,
+                VIDEO,
+                /**
+                 * An enum member indicating that [MediaType] was instantiated with an unknown
+                 * value.
+                 */
+                _UNKNOWN,
+            }
+
+            /**
+             * Returns an enum member corresponding to this class instance's value, or
+             * [Value._UNKNOWN] if the class was instantiated with an unknown value.
+             *
+             * Use the [known] method instead if you're certain the value is always known or if you
+             * want to throw for the unknown case.
+             */
+            fun value(): Value =
+                when (this) {
+                    IMAGE -> Value.IMAGE
+                    VIDEO -> Value.VIDEO
+                    else -> Value._UNKNOWN
+                }
+
+            /**
+             * Returns an enum member corresponding to this class instance's value.
+             *
+             * Use the [value] method instead if you're uncertain the value is always known and
+             * don't want to throw for the unknown case.
+             *
+             * @throws ZavudevInvalidDataException if this class instance's value is a not a known
+             *   member.
+             */
+            fun known(): Known =
+                when (this) {
+                    IMAGE -> Known.IMAGE
+                    VIDEO -> Known.VIDEO
+                    else -> throw ZavudevInvalidDataException("Unknown MediaType: $value")
+                }
+
+            /**
+             * Returns this class instance's primitive wire representation.
+             *
+             * This differs from the [toString] method because that method is primarily for
+             * debugging and generally doesn't throw.
+             *
+             * @throws ZavudevInvalidDataException if this class instance's value does not have the
+             *   expected primitive type.
+             */
+            fun asString(): String =
+                _value().asString().orElseThrow {
+                    ZavudevInvalidDataException("Value is not a String")
+                }
+
+            private var validated: Boolean = false
+
+            /**
+             * Validates that the types of all values in this object match their expected types
+             * recursively.
+             *
+             * This method is _not_ forwards compatible with new types from the API for existing
+             * fields.
+             *
+             * @throws ZavudevInvalidDataException if any value type in this object doesn't match
+             *   its expected type.
+             */
+            fun validate(): MediaType = apply {
+                if (validated) {
+                    return@apply
+                }
+
+                known()
+                validated = true
+            }
+
+            fun isValid(): Boolean =
+                try {
+                    validate()
+                    true
+                } catch (e: ZavudevInvalidDataException) {
+                    false
+                }
+
+            /**
+             * Returns a score indicating how many valid values are contained in this object
+             * recursively.
+             *
+             * Used for best match union deserialization.
+             */
+            @JvmSynthetic internal fun validity(): Int = if (value() == Value._UNKNOWN) 0 else 1
+
+            override fun equals(other: Any?): Boolean {
+                if (this === other) {
+                    return true
+                }
+
+                return other is MediaType && value == other.value
+            }
+
+            override fun hashCode() = value.hashCode()
+
+            override fun toString() = value.toString()
+        }
+
+        /** Where the click came from. */
+        class SourceType @JsonCreator private constructor(private val value: JsonField<String>) :
+            Enum {
+
+            /**
+             * Returns this class instance's raw value.
+             *
+             * This is usually only useful if this instance was deserialized from data that doesn't
+             * match any known member, and you want to know that value. For example, if the SDK is
+             * on an older version than the API, then the API may respond with new members that the
+             * SDK is unaware of.
+             */
+            @com.fasterxml.jackson.annotation.JsonValue fun _value(): JsonField<String> = value
+
+            companion object {
+
+                @JvmField val AD = of("ad")
+
+                @JvmField val POST = of("post")
+
+                @JvmStatic fun of(value: String) = SourceType(JsonField.of(value))
+            }
+
+            /** An enum containing [SourceType]'s known values. */
+            enum class Known {
+                AD,
+                POST,
+            }
+
+            /**
+             * An enum containing [SourceType]'s known values, as well as an [_UNKNOWN] member.
+             *
+             * An instance of [SourceType] can contain an unknown value in a couple of cases:
+             * - It was deserialized from data that doesn't match any known member. For example, if
+             *   the SDK is on an older version than the API, then the API may respond with new
+             *   members that the SDK is unaware of.
+             * - It was constructed with an arbitrary value using the [of] method.
+             */
+            enum class Value {
+                AD,
+                POST,
+                /**
+                 * An enum member indicating that [SourceType] was instantiated with an unknown
+                 * value.
+                 */
+                _UNKNOWN,
+            }
+
+            /**
+             * Returns an enum member corresponding to this class instance's value, or
+             * [Value._UNKNOWN] if the class was instantiated with an unknown value.
+             *
+             * Use the [known] method instead if you're certain the value is always known or if you
+             * want to throw for the unknown case.
+             */
+            fun value(): Value =
+                when (this) {
+                    AD -> Value.AD
+                    POST -> Value.POST
+                    else -> Value._UNKNOWN
+                }
+
+            /**
+             * Returns an enum member corresponding to this class instance's value.
+             *
+             * Use the [value] method instead if you're uncertain the value is always known and
+             * don't want to throw for the unknown case.
+             *
+             * @throws ZavudevInvalidDataException if this class instance's value is a not a known
+             *   member.
+             */
+            fun known(): Known =
+                when (this) {
+                    AD -> Known.AD
+                    POST -> Known.POST
+                    else -> throw ZavudevInvalidDataException("Unknown SourceType: $value")
+                }
+
+            /**
+             * Returns this class instance's primitive wire representation.
+             *
+             * This differs from the [toString] method because that method is primarily for
+             * debugging and generally doesn't throw.
+             *
+             * @throws ZavudevInvalidDataException if this class instance's value does not have the
+             *   expected primitive type.
+             */
+            fun asString(): String =
+                _value().asString().orElseThrow {
+                    ZavudevInvalidDataException("Value is not a String")
+                }
+
+            private var validated: Boolean = false
+
+            /**
+             * Validates that the types of all values in this object match their expected types
+             * recursively.
+             *
+             * This method is _not_ forwards compatible with new types from the API for existing
+             * fields.
+             *
+             * @throws ZavudevInvalidDataException if any value type in this object doesn't match
+             *   its expected type.
+             */
+            fun validate(): SourceType = apply {
+                if (validated) {
+                    return@apply
+                }
+
+                known()
+                validated = true
+            }
+
+            fun isValid(): Boolean =
+                try {
+                    validate()
+                    true
+                } catch (e: ZavudevInvalidDataException) {
+                    false
+                }
+
+            /**
+             * Returns a score indicating how many valid values are contained in this object
+             * recursively.
+             *
+             * Used for best match union deserialization.
+             */
+            @JvmSynthetic internal fun validity(): Int = if (value() == Value._UNKNOWN) 0 else 1
+
+            override fun equals(other: Any?): Boolean {
+                if (this === other) {
+                    return true
+                }
+
+                return other is SourceType && value == other.value
+            }
+
+            override fun hashCode() = value.hashCode()
+
+            override fun toString() = value.toString()
+        }
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) {
+                return true
+            }
+
+            return other is Referral &&
+                body == other.body &&
+                ctwaClid == other.ctwaClid &&
+                headline == other.headline &&
+                imageUrl == other.imageUrl &&
+                mediaType == other.mediaType &&
+                sourceId == other.sourceId &&
+                sourceType == other.sourceType &&
+                sourceUrl == other.sourceUrl &&
+                thumbnailUrl == other.thumbnailUrl &&
+                videoUrl == other.videoUrl &&
+                additionalProperties == other.additionalProperties
+        }
+
+        private val hashCode: Int by lazy {
+            Objects.hash(
+                body,
+                ctwaClid,
+                headline,
+                imageUrl,
+                mediaType,
+                sourceId,
+                sourceType,
+                sourceUrl,
+                thumbnailUrl,
+                videoUrl,
+                additionalProperties,
+            )
+        }
+
+        override fun hashCode(): Int = hashCode
+
+        override fun toString() =
+            "Referral{body=$body, ctwaClid=$ctwaClid, headline=$headline, imageUrl=$imageUrl, mediaType=$mediaType, sourceId=$sourceId, sourceType=$sourceType, sourceUrl=$sourceUrl, thumbnailUrl=$thumbnailUrl, videoUrl=$videoUrl, additionalProperties=$additionalProperties}"
     }
 
     class Section
@@ -2750,6 +3628,7 @@ private constructor(
             mediaUrl == other.mediaUrl &&
             mimeType == other.mimeType &&
             reactToMessageId == other.reactToMessageId &&
+            referral == other.referral &&
             replyToFrom == other.replyToFrom &&
             replyToMessageId == other.replyToMessageId &&
             replyToMessageType == other.replyToMessageType &&
@@ -2784,6 +3663,7 @@ private constructor(
             mediaUrl,
             mimeType,
             reactToMessageId,
+            referral,
             replyToFrom,
             replyToMessageId,
             replyToMessageType,
@@ -2801,5 +3681,5 @@ private constructor(
     override fun hashCode(): Int = hashCode
 
     override fun toString() =
-        "MessageContent{buttons=$buttons, contacts=$contacts, ctaDisplayText=$ctaDisplayText, ctaHeaderMediaUrl=$ctaHeaderMediaUrl, ctaHeaderText=$ctaHeaderText, ctaHeaderType=$ctaHeaderType, ctaUrl=$ctaUrl, emoji=$emoji, filename=$filename, footerText=$footerText, latitude=$latitude, listButton=$listButton, locationAddress=$locationAddress, locationName=$locationName, longitude=$longitude, mediaId=$mediaId, mediaUrl=$mediaUrl, mimeType=$mimeType, reactToMessageId=$reactToMessageId, replyToFrom=$replyToFrom, replyToMessageId=$replyToMessageId, replyToMessageType=$replyToMessageType, replyToProviderMessageId=$replyToProviderMessageId, replyToText=$replyToText, sections=$sections, templateButtonVariables=$templateButtonVariables, templateHeaderVariables=$templateHeaderVariables, templateId=$templateId, templateVariables=$templateVariables, additionalProperties=$additionalProperties}"
+        "MessageContent{buttons=$buttons, contacts=$contacts, ctaDisplayText=$ctaDisplayText, ctaHeaderMediaUrl=$ctaHeaderMediaUrl, ctaHeaderText=$ctaHeaderText, ctaHeaderType=$ctaHeaderType, ctaUrl=$ctaUrl, emoji=$emoji, filename=$filename, footerText=$footerText, latitude=$latitude, listButton=$listButton, locationAddress=$locationAddress, locationName=$locationName, longitude=$longitude, mediaId=$mediaId, mediaUrl=$mediaUrl, mimeType=$mimeType, reactToMessageId=$reactToMessageId, referral=$referral, replyToFrom=$replyToFrom, replyToMessageId=$replyToMessageId, replyToMessageType=$replyToMessageType, replyToProviderMessageId=$replyToProviderMessageId, replyToText=$replyToText, sections=$sections, templateButtonVariables=$templateButtonVariables, templateHeaderVariables=$templateHeaderVariables, templateId=$templateId, templateVariables=$templateVariables, additionalProperties=$additionalProperties}"
 }
