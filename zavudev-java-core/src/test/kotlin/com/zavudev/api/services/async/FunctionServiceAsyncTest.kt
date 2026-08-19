@@ -6,6 +6,8 @@ import com.zavudev.api.client.okhttp.ZavudevOkHttpClientAsync
 import com.zavudev.api.core.JsonValue
 import com.zavudev.api.models.functions.FunctionCreateParams
 import com.zavudev.api.models.functions.FunctionDeployParams
+import com.zavudev.api.models.functions.FunctionListDeploymentsParams
+import com.zavudev.api.models.functions.FunctionRollbackDeploymentParams
 import com.zavudev.api.models.functions.FunctionTailLogsParams
 import com.zavudev.api.models.functions.FunctionUpdateParams
 import org.junit.jupiter.api.Disabled
@@ -173,6 +175,51 @@ internal class FunctionServiceAsyncTest {
         val functionServiceAsync = client.functions()
 
         val responseFuture = functionServiceAsync.getDeployment("deploymentId")
+
+        val response = responseFuture.get()
+        response.validate()
+    }
+
+    @Disabled("Mock server tests are disabled")
+    @Test
+    fun listDeployments() {
+        val client = ZavudevOkHttpClientAsync.builder().apiKey("My API Key").build()
+        val functionServiceAsync = client.functions()
+
+        val responseFuture =
+            functionServiceAsync.listDeployments(
+                FunctionListDeploymentsParams.builder().functionId("functionId").limit(100L).build()
+            )
+
+        val response = responseFuture.get()
+        response.validate()
+    }
+
+    @Disabled("Mock server tests are disabled")
+    @Test
+    fun listEventTypes() {
+        val client = ZavudevOkHttpClientAsync.builder().apiKey("My API Key").build()
+        val functionServiceAsync = client.functions()
+
+        val responseFuture = functionServiceAsync.listEventTypes()
+
+        val response = responseFuture.get()
+        response.validate()
+    }
+
+    @Disabled("Mock server tests are disabled")
+    @Test
+    fun rollbackDeployment() {
+        val client = ZavudevOkHttpClientAsync.builder().apiKey("My API Key").build()
+        val functionServiceAsync = client.functions()
+
+        val responseFuture =
+            functionServiceAsync.rollbackDeployment(
+                FunctionRollbackDeploymentParams.builder()
+                    .functionId("functionId")
+                    .deploymentId("fnd_abc123")
+                    .build()
+            )
 
         val response = responseFuture.get()
         response.validate()

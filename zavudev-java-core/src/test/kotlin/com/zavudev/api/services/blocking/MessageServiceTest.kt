@@ -39,6 +39,17 @@ internal class MessageServiceTest {
 
     @Disabled("Mock server tests are disabled")
     @Test
+    fun listAttachments() {
+        val client = ZavudevOkHttpClient.builder().apiKey("My API Key").build()
+        val messageService = client.messages()
+
+        val response = messageService.listAttachments("messageId")
+
+        response.validate()
+    }
+
+    @Disabled("Mock server tests are disabled")
+    @Test
     fun react() {
         val client = ZavudevOkHttpClient.builder().apiKey("My API Key").build()
         val messageService = client.messages()

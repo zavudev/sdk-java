@@ -6,6 +6,8 @@ import com.zavudev.api.client.okhttp.ZavudevOkHttpClient
 import com.zavudev.api.core.JsonValue
 import com.zavudev.api.models.functions.FunctionCreateParams
 import com.zavudev.api.models.functions.FunctionDeployParams
+import com.zavudev.api.models.functions.FunctionListDeploymentsParams
+import com.zavudev.api.models.functions.FunctionRollbackDeploymentParams
 import com.zavudev.api.models.functions.FunctionTailLogsParams
 import com.zavudev.api.models.functions.FunctionUpdateParams
 import org.junit.jupiter.api.Disabled
@@ -168,6 +170,48 @@ internal class FunctionServiceTest {
         val functionService = client.functions()
 
         val response = functionService.getDeployment("deploymentId")
+
+        response.validate()
+    }
+
+    @Disabled("Mock server tests are disabled")
+    @Test
+    fun listDeployments() {
+        val client = ZavudevOkHttpClient.builder().apiKey("My API Key").build()
+        val functionService = client.functions()
+
+        val response =
+            functionService.listDeployments(
+                FunctionListDeploymentsParams.builder().functionId("functionId").limit(100L).build()
+            )
+
+        response.validate()
+    }
+
+    @Disabled("Mock server tests are disabled")
+    @Test
+    fun listEventTypes() {
+        val client = ZavudevOkHttpClient.builder().apiKey("My API Key").build()
+        val functionService = client.functions()
+
+        val response = functionService.listEventTypes()
+
+        response.validate()
+    }
+
+    @Disabled("Mock server tests are disabled")
+    @Test
+    fun rollbackDeployment() {
+        val client = ZavudevOkHttpClient.builder().apiKey("My API Key").build()
+        val functionService = client.functions()
+
+        val response =
+            functionService.rollbackDeployment(
+                FunctionRollbackDeploymentParams.builder()
+                    .functionId("functionId")
+                    .deploymentId("fnd_abc123")
+                    .build()
+            )
 
         response.validate()
     }

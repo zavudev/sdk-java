@@ -13,13 +13,21 @@ import com.zavudev.api.models.functions.FunctionDeployParams
 import com.zavudev.api.models.functions.FunctionDeployResponse
 import com.zavudev.api.models.functions.FunctionGetDeploymentParams
 import com.zavudev.api.models.functions.FunctionGetDeploymentResponse
+import com.zavudev.api.models.functions.FunctionListDeploymentsParams
+import com.zavudev.api.models.functions.FunctionListDeploymentsResponse
+import com.zavudev.api.models.functions.FunctionListEventTypesParams
+import com.zavudev.api.models.functions.FunctionListEventTypesResponse
 import com.zavudev.api.models.functions.FunctionRetrieveParams
 import com.zavudev.api.models.functions.FunctionRetrieveResponse
+import com.zavudev.api.models.functions.FunctionRollbackDeploymentParams
+import com.zavudev.api.models.functions.FunctionRollbackDeploymentResponse
 import com.zavudev.api.models.functions.FunctionTailLogsParams
 import com.zavudev.api.models.functions.FunctionTailLogsResponse
 import com.zavudev.api.models.functions.FunctionUpdateParams
 import com.zavudev.api.models.functions.FunctionUpdateResponse
+import com.zavudev.api.services.async.functions.GitLinkServiceAsync
 import com.zavudev.api.services.async.functions.SecretServiceAsync
+import com.zavudev.api.services.async.functions.TriggerServiceAsync
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
 
@@ -38,6 +46,10 @@ interface FunctionServiceAsync {
     fun withOptions(modifier: Consumer<ClientOptions.Builder>): FunctionServiceAsync
 
     fun secrets(): SecretServiceAsync
+
+    fun triggers(): TriggerServiceAsync
+
+    fun gitLink(): GitLinkServiceAsync
 
     /**
      * Create a new Zavu Function. The function starts in `draft` status. A dedicated API key is
@@ -249,6 +261,105 @@ interface FunctionServiceAsync {
         getDeployment(deploymentId, FunctionGetDeploymentParams.none(), requestOptions)
 
     /**
+     * List a function's deployment history, newest first. Source code is omitted; fetch a single
+     * deployment via GET /v1/functions/deployments/{deploymentId} for full details.
+     */
+    fun listDeployments(functionId: String): CompletableFuture<FunctionListDeploymentsResponse> =
+        listDeployments(functionId, FunctionListDeploymentsParams.none())
+
+    /** @see listDeployments */
+    fun listDeployments(
+        functionId: String,
+        params: FunctionListDeploymentsParams = FunctionListDeploymentsParams.none(),
+        requestOptions: RequestOptions = RequestOptions.none(),
+    ): CompletableFuture<FunctionListDeploymentsResponse> =
+        listDeployments(params.toBuilder().functionId(functionId).build(), requestOptions)
+
+    /** @see listDeployments */
+    fun listDeployments(
+        functionId: String,
+        params: FunctionListDeploymentsParams = FunctionListDeploymentsParams.none(),
+    ): CompletableFuture<FunctionListDeploymentsResponse> =
+        listDeployments(functionId, params, RequestOptions.none())
+
+    /** @see listDeployments */
+    fun listDeployments(
+        params: FunctionListDeploymentsParams,
+        requestOptions: RequestOptions = RequestOptions.none(),
+    ): CompletableFuture<FunctionListDeploymentsResponse>
+
+    /** @see listDeployments */
+    fun listDeployments(
+        params: FunctionListDeploymentsParams
+    ): CompletableFuture<FunctionListDeploymentsResponse> =
+        listDeployments(params, RequestOptions.none())
+
+    /** @see listDeployments */
+    fun listDeployments(
+        functionId: String,
+        requestOptions: RequestOptions,
+    ): CompletableFuture<FunctionListDeploymentsResponse> =
+        listDeployments(functionId, FunctionListDeploymentsParams.none(), requestOptions)
+
+    /**
+     * List the event types a function trigger can subscribe to. Includes the special type `cron`,
+     * which fires on a schedule (see POST /v1/functions/{functionId}/triggers) rather than on a
+     * messaging event.
+     */
+    fun listEventTypes(): CompletableFuture<FunctionListEventTypesResponse> =
+        listEventTypes(FunctionListEventTypesParams.none())
+
+    /** @see listEventTypes */
+    fun listEventTypes(
+        params: FunctionListEventTypesParams = FunctionListEventTypesParams.none(),
+        requestOptions: RequestOptions = RequestOptions.none(),
+    ): CompletableFuture<FunctionListEventTypesResponse>
+
+    /** @see listEventTypes */
+    fun listEventTypes(
+        params: FunctionListEventTypesParams = FunctionListEventTypesParams.none()
+    ): CompletableFuture<FunctionListEventTypesResponse> =
+        listEventTypes(params, RequestOptions.none())
+
+    /** @see listEventTypes */
+    fun listEventTypes(
+        requestOptions: RequestOptions
+    ): CompletableFuture<FunctionListEventTypesResponse> =
+        listEventTypes(FunctionListEventTypesParams.none(), requestOptions)
+
+    /**
+     * Re-deploy a previous version by copying its source, dependencies, and runtime pin onto the
+     * function's draft, then deploying. Returns immediately with a deployment ID — poll GET
+     * /v1/functions/deployments/{deploymentId} until status is active or failed. Secrets are not
+     * rolled back.
+     */
+    fun rollbackDeployment(
+        functionId: String,
+        params: FunctionRollbackDeploymentParams,
+    ): CompletableFuture<FunctionRollbackDeploymentResponse> =
+        rollbackDeployment(functionId, params, RequestOptions.none())
+
+    /** @see rollbackDeployment */
+    fun rollbackDeployment(
+        functionId: String,
+        params: FunctionRollbackDeploymentParams,
+        requestOptions: RequestOptions = RequestOptions.none(),
+    ): CompletableFuture<FunctionRollbackDeploymentResponse> =
+        rollbackDeployment(params.toBuilder().functionId(functionId).build(), requestOptions)
+
+    /** @see rollbackDeployment */
+    fun rollbackDeployment(
+        params: FunctionRollbackDeploymentParams
+    ): CompletableFuture<FunctionRollbackDeploymentResponse> =
+        rollbackDeployment(params, RequestOptions.none())
+
+    /** @see rollbackDeployment */
+    fun rollbackDeployment(
+        params: FunctionRollbackDeploymentParams,
+        requestOptions: RequestOptions = RequestOptions.none(),
+    ): CompletableFuture<FunctionRollbackDeploymentResponse>
+
+    /**
      * Fetch invocation logs for a function. Logs are paginated via `nextToken`. Pass `startTime` /
      * `endTime` (Unix epoch milliseconds) to bound the window, or `filterPattern` to filter
      * messages.
@@ -303,6 +414,10 @@ interface FunctionServiceAsync {
         ): FunctionServiceAsync.WithRawResponse
 
         fun secrets(): SecretServiceAsync.WithRawResponse
+
+        fun triggers(): TriggerServiceAsync.WithRawResponse
+
+        fun gitLink(): GitLinkServiceAsync.WithRawResponse
 
         /**
          * Returns a raw HTTP response for `post /v1/functions`, but is otherwise the same as
@@ -527,6 +642,104 @@ interface FunctionServiceAsync {
             requestOptions: RequestOptions,
         ): CompletableFuture<HttpResponseFor<FunctionGetDeploymentResponse>> =
             getDeployment(deploymentId, FunctionGetDeploymentParams.none(), requestOptions)
+
+        /**
+         * Returns a raw HTTP response for `get /v1/functions/{functionId}/deployments`, but is
+         * otherwise the same as [FunctionServiceAsync.listDeployments].
+         */
+        fun listDeployments(
+            functionId: String
+        ): CompletableFuture<HttpResponseFor<FunctionListDeploymentsResponse>> =
+            listDeployments(functionId, FunctionListDeploymentsParams.none())
+
+        /** @see listDeployments */
+        fun listDeployments(
+            functionId: String,
+            params: FunctionListDeploymentsParams = FunctionListDeploymentsParams.none(),
+            requestOptions: RequestOptions = RequestOptions.none(),
+        ): CompletableFuture<HttpResponseFor<FunctionListDeploymentsResponse>> =
+            listDeployments(params.toBuilder().functionId(functionId).build(), requestOptions)
+
+        /** @see listDeployments */
+        fun listDeployments(
+            functionId: String,
+            params: FunctionListDeploymentsParams = FunctionListDeploymentsParams.none(),
+        ): CompletableFuture<HttpResponseFor<FunctionListDeploymentsResponse>> =
+            listDeployments(functionId, params, RequestOptions.none())
+
+        /** @see listDeployments */
+        fun listDeployments(
+            params: FunctionListDeploymentsParams,
+            requestOptions: RequestOptions = RequestOptions.none(),
+        ): CompletableFuture<HttpResponseFor<FunctionListDeploymentsResponse>>
+
+        /** @see listDeployments */
+        fun listDeployments(
+            params: FunctionListDeploymentsParams
+        ): CompletableFuture<HttpResponseFor<FunctionListDeploymentsResponse>> =
+            listDeployments(params, RequestOptions.none())
+
+        /** @see listDeployments */
+        fun listDeployments(
+            functionId: String,
+            requestOptions: RequestOptions,
+        ): CompletableFuture<HttpResponseFor<FunctionListDeploymentsResponse>> =
+            listDeployments(functionId, FunctionListDeploymentsParams.none(), requestOptions)
+
+        /**
+         * Returns a raw HTTP response for `get /v1/functions/event-types`, but is otherwise the
+         * same as [FunctionServiceAsync.listEventTypes].
+         */
+        fun listEventTypes(): CompletableFuture<HttpResponseFor<FunctionListEventTypesResponse>> =
+            listEventTypes(FunctionListEventTypesParams.none())
+
+        /** @see listEventTypes */
+        fun listEventTypes(
+            params: FunctionListEventTypesParams = FunctionListEventTypesParams.none(),
+            requestOptions: RequestOptions = RequestOptions.none(),
+        ): CompletableFuture<HttpResponseFor<FunctionListEventTypesResponse>>
+
+        /** @see listEventTypes */
+        fun listEventTypes(
+            params: FunctionListEventTypesParams = FunctionListEventTypesParams.none()
+        ): CompletableFuture<HttpResponseFor<FunctionListEventTypesResponse>> =
+            listEventTypes(params, RequestOptions.none())
+
+        /** @see listEventTypes */
+        fun listEventTypes(
+            requestOptions: RequestOptions
+        ): CompletableFuture<HttpResponseFor<FunctionListEventTypesResponse>> =
+            listEventTypes(FunctionListEventTypesParams.none(), requestOptions)
+
+        /**
+         * Returns a raw HTTP response for `post /v1/functions/{functionId}/rollback`, but is
+         * otherwise the same as [FunctionServiceAsync.rollbackDeployment].
+         */
+        fun rollbackDeployment(
+            functionId: String,
+            params: FunctionRollbackDeploymentParams,
+        ): CompletableFuture<HttpResponseFor<FunctionRollbackDeploymentResponse>> =
+            rollbackDeployment(functionId, params, RequestOptions.none())
+
+        /** @see rollbackDeployment */
+        fun rollbackDeployment(
+            functionId: String,
+            params: FunctionRollbackDeploymentParams,
+            requestOptions: RequestOptions = RequestOptions.none(),
+        ): CompletableFuture<HttpResponseFor<FunctionRollbackDeploymentResponse>> =
+            rollbackDeployment(params.toBuilder().functionId(functionId).build(), requestOptions)
+
+        /** @see rollbackDeployment */
+        fun rollbackDeployment(
+            params: FunctionRollbackDeploymentParams
+        ): CompletableFuture<HttpResponseFor<FunctionRollbackDeploymentResponse>> =
+            rollbackDeployment(params, RequestOptions.none())
+
+        /** @see rollbackDeployment */
+        fun rollbackDeployment(
+            params: FunctionRollbackDeploymentParams,
+            requestOptions: RequestOptions = RequestOptions.none(),
+        ): CompletableFuture<HttpResponseFor<FunctionRollbackDeploymentResponse>>
 
         /**
          * Returns a raw HTTP response for `get /v1/functions/{functionId}/logs`, but is otherwise

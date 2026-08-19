@@ -12,12 +12,15 @@ import com.zavudev.api.models.senders.agent.tools.ToolCreateResponse
 import com.zavudev.api.models.senders.agent.tools.ToolDeleteParams
 import com.zavudev.api.models.senders.agent.tools.ToolListPage
 import com.zavudev.api.models.senders.agent.tools.ToolListParams
+import com.zavudev.api.models.senders.agent.tools.ToolListTestRunsParams
+import com.zavudev.api.models.senders.agent.tools.ToolListTestRunsResponse
 import com.zavudev.api.models.senders.agent.tools.ToolRetrieveParams
 import com.zavudev.api.models.senders.agent.tools.ToolRetrieveResponse
 import com.zavudev.api.models.senders.agent.tools.ToolTestParams
 import com.zavudev.api.models.senders.agent.tools.ToolTestResponse
 import com.zavudev.api.models.senders.agent.tools.ToolUpdateParams
 import com.zavudev.api.models.senders.agent.tools.ToolUpdateResponse
+import com.zavudev.api.services.blocking.senders.agent.tools.WebhookService
 import java.util.function.Consumer
 
 interface ToolService {
@@ -33,6 +36,8 @@ interface ToolService {
      * The original service is not modified.
      */
     fun withOptions(modifier: Consumer<ClientOptions.Builder>): ToolService
+
+    fun webhook(): WebhookService
 
     /** Create a new tool for an agent. Tools allow the agent to call external webhooks. */
     fun create(senderId: String, params: ToolCreateParams): ToolCreateResponse =
@@ -140,6 +145,31 @@ interface ToolService {
     fun delete(params: ToolDeleteParams, requestOptions: RequestOptions = RequestOptions.none())
 
     /**
+     * Recent runs of this tool triggered from the test endpoint, newest first. Covers manual tests
+     * only: a tool called by an agent during a real conversation is not recorded here.
+     */
+    fun listTestRuns(toolId: String, params: ToolListTestRunsParams): ToolListTestRunsResponse =
+        listTestRuns(toolId, params, RequestOptions.none())
+
+    /** @see listTestRuns */
+    fun listTestRuns(
+        toolId: String,
+        params: ToolListTestRunsParams,
+        requestOptions: RequestOptions = RequestOptions.none(),
+    ): ToolListTestRunsResponse =
+        listTestRuns(params.toBuilder().toolId(toolId).build(), requestOptions)
+
+    /** @see listTestRuns */
+    fun listTestRuns(params: ToolListTestRunsParams): ToolListTestRunsResponse =
+        listTestRuns(params, RequestOptions.none())
+
+    /** @see listTestRuns */
+    fun listTestRuns(
+        params: ToolListTestRunsParams,
+        requestOptions: RequestOptions = RequestOptions.none(),
+    ): ToolListTestRunsResponse
+
+    /**
      * Run a tool with the parameters you supply and return what it answered.
      *
      * The call is synchronous: the response carries the tool's status, body, and duration, so a
@@ -179,6 +209,8 @@ interface ToolService {
          * The original service is not modified.
          */
         fun withOptions(modifier: Consumer<ClientOptions.Builder>): ToolService.WithRawResponse
+
+        fun webhook(): WebhookService.WithRawResponse
 
         /**
          * Returns a raw HTTP response for `post /v1/senders/{senderId}/agent/tools`, but is
@@ -338,6 +370,40 @@ interface ToolService {
             params: ToolDeleteParams,
             requestOptions: RequestOptions = RequestOptions.none(),
         ): HttpResponse
+
+        /**
+         * Returns a raw HTTP response for `get
+         * /v1/senders/{senderId}/agent/tools/{toolId}/test-runs`, but is otherwise the same as
+         * [ToolService.listTestRuns].
+         */
+        @MustBeClosed
+        fun listTestRuns(
+            toolId: String,
+            params: ToolListTestRunsParams,
+        ): HttpResponseFor<ToolListTestRunsResponse> =
+            listTestRuns(toolId, params, RequestOptions.none())
+
+        /** @see listTestRuns */
+        @MustBeClosed
+        fun listTestRuns(
+            toolId: String,
+            params: ToolListTestRunsParams,
+            requestOptions: RequestOptions = RequestOptions.none(),
+        ): HttpResponseFor<ToolListTestRunsResponse> =
+            listTestRuns(params.toBuilder().toolId(toolId).build(), requestOptions)
+
+        /** @see listTestRuns */
+        @MustBeClosed
+        fun listTestRuns(
+            params: ToolListTestRunsParams
+        ): HttpResponseFor<ToolListTestRunsResponse> = listTestRuns(params, RequestOptions.none())
+
+        /** @see listTestRuns */
+        @MustBeClosed
+        fun listTestRuns(
+            params: ToolListTestRunsParams,
+            requestOptions: RequestOptions = RequestOptions.none(),
+        ): HttpResponseFor<ToolListTestRunsResponse>
 
         /**
          * Returns a raw HTTP response for `post /v1/senders/{senderId}/agent/tools/{toolId}/test`,
