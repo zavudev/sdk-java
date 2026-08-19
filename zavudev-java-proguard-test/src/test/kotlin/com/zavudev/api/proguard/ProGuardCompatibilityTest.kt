@@ -69,6 +69,11 @@ internal class ProGuardCompatibilityTest {
         assertThat(client.number10dlc()).isNotNull()
         assertThat(client.me()).isNotNull()
         assertThat(client.functions()).isNotNull()
+        assertThat(client.conversations()).isNotNull()
+        assertThat(client.calls()).isNotNull()
+        assertThat(client.agentTemplates()).isNotNull()
+        assertThat(client.emailDomains()).isNotNull()
+        assertThat(client.agents()).isNotNull()
     }
 
     @Test

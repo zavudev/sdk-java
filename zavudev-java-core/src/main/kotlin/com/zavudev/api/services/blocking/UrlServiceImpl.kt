@@ -16,6 +16,8 @@ import com.zavudev.api.core.http.HttpResponseFor
 import com.zavudev.api.core.http.json
 import com.zavudev.api.core.http.parseable
 import com.zavudev.api.core.prepare
+import com.zavudev.api.models.urls.UrlEscalateParams
+import com.zavudev.api.models.urls.UrlEscalateResponse
 import com.zavudev.api.models.urls.UrlListVerifiedPage
 import com.zavudev.api.models.urls.UrlListVerifiedPageResponse
 import com.zavudev.api.models.urls.UrlListVerifiedParams
@@ -36,6 +38,13 @@ class UrlServiceImpl internal constructor(private val clientOptions: ClientOptio
 
     override fun withOptions(modifier: Consumer<ClientOptions.Builder>): UrlService =
         UrlServiceImpl(clientOptions.toBuilder().apply(modifier::accept).build())
+
+    override fun escalate(
+        params: UrlEscalateParams,
+        requestOptions: RequestOptions,
+    ): UrlEscalateResponse =
+        // post /v1/urls/{urlId}/escalate
+        withRawResponse().escalate(params, requestOptions).parse()
 
     override fun listVerified(
         params: UrlListVerifiedParams,
@@ -70,6 +79,37 @@ class UrlServiceImpl internal constructor(private val clientOptions: ClientOptio
             UrlServiceImpl.WithRawResponseImpl(
                 clientOptions.toBuilder().apply(modifier::accept).build()
             )
+
+        private val escalateHandler: Handler<UrlEscalateResponse> =
+            jsonHandler<UrlEscalateResponse>(clientOptions.jsonMapper)
+
+        override fun escalate(
+            params: UrlEscalateParams,
+            requestOptions: RequestOptions,
+        ): HttpResponseFor<UrlEscalateResponse> {
+            // We check here instead of in the params builder because this can be specified
+            // positionally or in the params class.
+            checkRequired("urlId", params.urlId().getOrNull())
+            val request =
+                HttpRequest.builder()
+                    .method(HttpMethod.POST)
+                    .baseUrl(clientOptions.baseUrl())
+                    .addPathSegments("v1", "urls", params._pathParam(0), "escalate")
+                    .body(json(clientOptions.jsonMapper, params._body()))
+                    .build()
+                    .prepare(clientOptions, params)
+            val requestOptions = requestOptions.applyDefaults(RequestOptions.from(clientOptions))
+            val response = clientOptions.httpClient.execute(request, requestOptions)
+            return errorHandler.handle(response).parseable {
+                response
+                    .use { escalateHandler.handle(it) }
+                    .also {
+                        if (requestOptions.responseValidation!!) {
+                            it.validate()
+                        }
+                    }
+            }
+        }
 
         private val listVerifiedHandler: Handler<UrlListVerifiedPageResponse> =
             jsonHandler<UrlListVerifiedPageResponse>(clientOptions.jsonMapper)

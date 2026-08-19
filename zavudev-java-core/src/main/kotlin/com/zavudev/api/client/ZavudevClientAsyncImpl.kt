@@ -6,12 +6,22 @@ import com.zavudev.api.core.ClientOptions
 import com.zavudev.api.core.getPackageVersion
 import com.zavudev.api.services.async.AddressServiceAsync
 import com.zavudev.api.services.async.AddressServiceAsyncImpl
+import com.zavudev.api.services.async.AgentServiceAsync
+import com.zavudev.api.services.async.AgentServiceAsyncImpl
+import com.zavudev.api.services.async.AgentTemplateServiceAsync
+import com.zavudev.api.services.async.AgentTemplateServiceAsyncImpl
 import com.zavudev.api.services.async.BalanceServiceAsync
 import com.zavudev.api.services.async.BalanceServiceAsyncImpl
 import com.zavudev.api.services.async.BroadcastServiceAsync
 import com.zavudev.api.services.async.BroadcastServiceAsyncImpl
+import com.zavudev.api.services.async.CallServiceAsync
+import com.zavudev.api.services.async.CallServiceAsyncImpl
 import com.zavudev.api.services.async.ContactServiceAsync
 import com.zavudev.api.services.async.ContactServiceAsyncImpl
+import com.zavudev.api.services.async.ConversationServiceAsync
+import com.zavudev.api.services.async.ConversationServiceAsyncImpl
+import com.zavudev.api.services.async.EmailDomainServiceAsync
+import com.zavudev.api.services.async.EmailDomainServiceAsyncImpl
 import com.zavudev.api.services.async.FunctionServiceAsync
 import com.zavudev.api.services.async.FunctionServiceAsyncImpl
 import com.zavudev.api.services.async.IntrospectServiceAsync
@@ -115,6 +125,24 @@ class ZavudevClientAsyncImpl(private val clientOptions: ClientOptions) : Zavudev
         FunctionServiceAsyncImpl(clientOptionsWithUserAgent)
     }
 
+    private val conversations: ConversationServiceAsync by lazy {
+        ConversationServiceAsyncImpl(clientOptionsWithUserAgent)
+    }
+
+    private val calls: CallServiceAsync by lazy { CallServiceAsyncImpl(clientOptionsWithUserAgent) }
+
+    private val agentTemplates: AgentTemplateServiceAsync by lazy {
+        AgentTemplateServiceAsyncImpl(clientOptionsWithUserAgent)
+    }
+
+    private val emailDomains: EmailDomainServiceAsync by lazy {
+        EmailDomainServiceAsyncImpl(clientOptionsWithUserAgent)
+    }
+
+    private val agents: AgentServiceAsync by lazy {
+        AgentServiceAsyncImpl(clientOptionsWithUserAgent)
+    }
+
     override fun sync(): ZavudevClient = sync
 
     override fun withRawResponse(): ZavudevClientAsync.WithRawResponse = withRawResponse
@@ -153,6 +181,16 @@ class ZavudevClientAsyncImpl(private val clientOptions: ClientOptions) : Zavudev
     override fun me(): MeServiceAsync = me
 
     override fun functions(): FunctionServiceAsync = functions
+
+    override fun conversations(): ConversationServiceAsync = conversations
+
+    override fun calls(): CallServiceAsync = calls
+
+    override fun agentTemplates(): AgentTemplateServiceAsync = agentTemplates
+
+    override fun emailDomains(): EmailDomainServiceAsync = emailDomains
+
+    override fun agents(): AgentServiceAsync = agents
 
     override fun close() = clientOptions.close()
 
@@ -223,6 +261,26 @@ class ZavudevClientAsyncImpl(private val clientOptions: ClientOptions) : Zavudev
             FunctionServiceAsyncImpl.WithRawResponseImpl(clientOptions)
         }
 
+        private val conversations: ConversationServiceAsync.WithRawResponse by lazy {
+            ConversationServiceAsyncImpl.WithRawResponseImpl(clientOptions)
+        }
+
+        private val calls: CallServiceAsync.WithRawResponse by lazy {
+            CallServiceAsyncImpl.WithRawResponseImpl(clientOptions)
+        }
+
+        private val agentTemplates: AgentTemplateServiceAsync.WithRawResponse by lazy {
+            AgentTemplateServiceAsyncImpl.WithRawResponseImpl(clientOptions)
+        }
+
+        private val emailDomains: EmailDomainServiceAsync.WithRawResponse by lazy {
+            EmailDomainServiceAsyncImpl.WithRawResponseImpl(clientOptions)
+        }
+
+        private val agents: AgentServiceAsync.WithRawResponse by lazy {
+            AgentServiceAsyncImpl.WithRawResponseImpl(clientOptions)
+        }
+
         override fun withOptions(
             modifier: Consumer<ClientOptions.Builder>
         ): ZavudevClientAsync.WithRawResponse =
@@ -262,5 +320,15 @@ class ZavudevClientAsyncImpl(private val clientOptions: ClientOptions) : Zavudev
         override fun me(): MeServiceAsync.WithRawResponse = me
 
         override fun functions(): FunctionServiceAsync.WithRawResponse = functions
+
+        override fun conversations(): ConversationServiceAsync.WithRawResponse = conversations
+
+        override fun calls(): CallServiceAsync.WithRawResponse = calls
+
+        override fun agentTemplates(): AgentTemplateServiceAsync.WithRawResponse = agentTemplates
+
+        override fun emailDomains(): EmailDomainServiceAsync.WithRawResponse = emailDomains
+
+        override fun agents(): AgentServiceAsync.WithRawResponse = agents
     }
 }

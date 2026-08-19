@@ -24,14 +24,24 @@ import com.zavudev.api.models.functions.FunctionDeployParams
 import com.zavudev.api.models.functions.FunctionDeployResponse
 import com.zavudev.api.models.functions.FunctionGetDeploymentParams
 import com.zavudev.api.models.functions.FunctionGetDeploymentResponse
+import com.zavudev.api.models.functions.FunctionListDeploymentsParams
+import com.zavudev.api.models.functions.FunctionListDeploymentsResponse
+import com.zavudev.api.models.functions.FunctionListEventTypesParams
+import com.zavudev.api.models.functions.FunctionListEventTypesResponse
 import com.zavudev.api.models.functions.FunctionRetrieveParams
 import com.zavudev.api.models.functions.FunctionRetrieveResponse
+import com.zavudev.api.models.functions.FunctionRollbackDeploymentParams
+import com.zavudev.api.models.functions.FunctionRollbackDeploymentResponse
 import com.zavudev.api.models.functions.FunctionTailLogsParams
 import com.zavudev.api.models.functions.FunctionTailLogsResponse
 import com.zavudev.api.models.functions.FunctionUpdateParams
 import com.zavudev.api.models.functions.FunctionUpdateResponse
+import com.zavudev.api.services.async.functions.GitLinkServiceAsync
+import com.zavudev.api.services.async.functions.GitLinkServiceAsyncImpl
 import com.zavudev.api.services.async.functions.SecretServiceAsync
 import com.zavudev.api.services.async.functions.SecretServiceAsyncImpl
+import com.zavudev.api.services.async.functions.TriggerServiceAsync
+import com.zavudev.api.services.async.functions.TriggerServiceAsyncImpl
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
 import kotlin.jvm.optionals.getOrNull
@@ -45,12 +55,20 @@ class FunctionServiceAsyncImpl internal constructor(private val clientOptions: C
 
     private val secrets: SecretServiceAsync by lazy { SecretServiceAsyncImpl(clientOptions) }
 
+    private val triggers: TriggerServiceAsync by lazy { TriggerServiceAsyncImpl(clientOptions) }
+
+    private val gitLink: GitLinkServiceAsync by lazy { GitLinkServiceAsyncImpl(clientOptions) }
+
     override fun withRawResponse(): FunctionServiceAsync.WithRawResponse = withRawResponse
 
     override fun withOptions(modifier: Consumer<ClientOptions.Builder>): FunctionServiceAsync =
         FunctionServiceAsyncImpl(clientOptions.toBuilder().apply(modifier::accept).build())
 
     override fun secrets(): SecretServiceAsync = secrets
+
+    override fun triggers(): TriggerServiceAsync = triggers
+
+    override fun gitLink(): GitLinkServiceAsync = gitLink
 
     override fun create(
         params: FunctionCreateParams,
@@ -94,6 +112,27 @@ class FunctionServiceAsyncImpl internal constructor(private val clientOptions: C
         // get /v1/functions/deployments/{deploymentId}
         withRawResponse().getDeployment(params, requestOptions).thenApply { it.parse() }
 
+    override fun listDeployments(
+        params: FunctionListDeploymentsParams,
+        requestOptions: RequestOptions,
+    ): CompletableFuture<FunctionListDeploymentsResponse> =
+        // get /v1/functions/{functionId}/deployments
+        withRawResponse().listDeployments(params, requestOptions).thenApply { it.parse() }
+
+    override fun listEventTypes(
+        params: FunctionListEventTypesParams,
+        requestOptions: RequestOptions,
+    ): CompletableFuture<FunctionListEventTypesResponse> =
+        // get /v1/functions/event-types
+        withRawResponse().listEventTypes(params, requestOptions).thenApply { it.parse() }
+
+    override fun rollbackDeployment(
+        params: FunctionRollbackDeploymentParams,
+        requestOptions: RequestOptions,
+    ): CompletableFuture<FunctionRollbackDeploymentResponse> =
+        // post /v1/functions/{functionId}/rollback
+        withRawResponse().rollbackDeployment(params, requestOptions).thenApply { it.parse() }
+
     override fun tailLogs(
         params: FunctionTailLogsParams,
         requestOptions: RequestOptions,
@@ -111,6 +150,14 @@ class FunctionServiceAsyncImpl internal constructor(private val clientOptions: C
             SecretServiceAsyncImpl.WithRawResponseImpl(clientOptions)
         }
 
+        private val triggers: TriggerServiceAsync.WithRawResponse by lazy {
+            TriggerServiceAsyncImpl.WithRawResponseImpl(clientOptions)
+        }
+
+        private val gitLink: GitLinkServiceAsync.WithRawResponse by lazy {
+            GitLinkServiceAsyncImpl.WithRawResponseImpl(clientOptions)
+        }
+
         override fun withOptions(
             modifier: Consumer<ClientOptions.Builder>
         ): FunctionServiceAsync.WithRawResponse =
@@ -119,6 +166,10 @@ class FunctionServiceAsyncImpl internal constructor(private val clientOptions: C
             )
 
         override fun secrets(): SecretServiceAsync.WithRawResponse = secrets
+
+        override fun triggers(): TriggerServiceAsync.WithRawResponse = triggers
+
+        override fun gitLink(): GitLinkServiceAsync.WithRawResponse = gitLink
 
         private val createHandler: Handler<FunctionCreateResponse> =
             jsonHandler<FunctionCreateResponse>(clientOptions.jsonMapper)
@@ -310,6 +361,103 @@ class FunctionServiceAsyncImpl internal constructor(private val clientOptions: C
                     errorHandler.handle(response).parseable {
                         response
                             .use { getDeploymentHandler.handle(it) }
+                            .also {
+                                if (requestOptions.responseValidation!!) {
+                                    it.validate()
+                                }
+                            }
+                    }
+                }
+        }
+
+        private val listDeploymentsHandler: Handler<FunctionListDeploymentsResponse> =
+            jsonHandler<FunctionListDeploymentsResponse>(clientOptions.jsonMapper)
+
+        override fun listDeployments(
+            params: FunctionListDeploymentsParams,
+            requestOptions: RequestOptions,
+        ): CompletableFuture<HttpResponseFor<FunctionListDeploymentsResponse>> {
+            // We check here instead of in the params builder because this can be specified
+            // positionally or in the params class.
+            checkRequired("functionId", params.functionId().getOrNull())
+            val request =
+                HttpRequest.builder()
+                    .method(HttpMethod.GET)
+                    .baseUrl(clientOptions.baseUrl())
+                    .addPathSegments("v1", "functions", params._pathParam(0), "deployments")
+                    .build()
+                    .prepareAsync(clientOptions, params)
+            val requestOptions = requestOptions.applyDefaults(RequestOptions.from(clientOptions))
+            return request
+                .thenComposeAsync { clientOptions.httpClient.executeAsync(it, requestOptions) }
+                .thenApply { response ->
+                    errorHandler.handle(response).parseable {
+                        response
+                            .use { listDeploymentsHandler.handle(it) }
+                            .also {
+                                if (requestOptions.responseValidation!!) {
+                                    it.validate()
+                                }
+                            }
+                    }
+                }
+        }
+
+        private val listEventTypesHandler: Handler<FunctionListEventTypesResponse> =
+            jsonHandler<FunctionListEventTypesResponse>(clientOptions.jsonMapper)
+
+        override fun listEventTypes(
+            params: FunctionListEventTypesParams,
+            requestOptions: RequestOptions,
+        ): CompletableFuture<HttpResponseFor<FunctionListEventTypesResponse>> {
+            val request =
+                HttpRequest.builder()
+                    .method(HttpMethod.GET)
+                    .baseUrl(clientOptions.baseUrl())
+                    .addPathSegments("v1", "functions", "event-types")
+                    .build()
+                    .prepareAsync(clientOptions, params)
+            val requestOptions = requestOptions.applyDefaults(RequestOptions.from(clientOptions))
+            return request
+                .thenComposeAsync { clientOptions.httpClient.executeAsync(it, requestOptions) }
+                .thenApply { response ->
+                    errorHandler.handle(response).parseable {
+                        response
+                            .use { listEventTypesHandler.handle(it) }
+                            .also {
+                                if (requestOptions.responseValidation!!) {
+                                    it.validate()
+                                }
+                            }
+                    }
+                }
+        }
+
+        private val rollbackDeploymentHandler: Handler<FunctionRollbackDeploymentResponse> =
+            jsonHandler<FunctionRollbackDeploymentResponse>(clientOptions.jsonMapper)
+
+        override fun rollbackDeployment(
+            params: FunctionRollbackDeploymentParams,
+            requestOptions: RequestOptions,
+        ): CompletableFuture<HttpResponseFor<FunctionRollbackDeploymentResponse>> {
+            // We check here instead of in the params builder because this can be specified
+            // positionally or in the params class.
+            checkRequired("functionId", params.functionId().getOrNull())
+            val request =
+                HttpRequest.builder()
+                    .method(HttpMethod.POST)
+                    .baseUrl(clientOptions.baseUrl())
+                    .addPathSegments("v1", "functions", params._pathParam(0), "rollback")
+                    .body(json(clientOptions.jsonMapper, params._body()))
+                    .build()
+                    .prepareAsync(clientOptions, params)
+            val requestOptions = requestOptions.applyDefaults(RequestOptions.from(clientOptions))
+            return request
+                .thenComposeAsync { clientOptions.httpClient.executeAsync(it, requestOptions) }
+                .thenApply { response ->
+                    errorHandler.handle(response).parseable {
+                        response
+                            .use { rollbackDeploymentHandler.handle(it) }
                             .also {
                                 if (requestOptions.responseValidation!!) {
                                     it.validate()

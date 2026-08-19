@@ -5,6 +5,8 @@ package com.zavudev.api.services.async
 import com.zavudev.api.core.ClientOptions
 import com.zavudev.api.core.RequestOptions
 import com.zavudev.api.core.http.HttpResponseFor
+import com.zavudev.api.models.messages.MessageListAttachmentsParams
+import com.zavudev.api.models.messages.MessageListAttachmentsResponse
 import com.zavudev.api.models.messages.MessageListPageAsync
 import com.zavudev.api.models.messages.MessageListParams
 import com.zavudev.api.models.messages.MessageReactParams
@@ -82,6 +84,50 @@ interface MessageServiceAsync {
     /** @see list */
     fun list(requestOptions: RequestOptions): CompletableFuture<MessageListPageAsync> =
         list(MessageListParams.none(), requestOptions)
+
+    /**
+     * List the stored file attachments for an email message and get a short-lived signed
+     * `downloadUrl` for each. Works for both inbound emails (received via `message.inbound`) and
+     * outbound emails you sent with attachments. Messages without stored attachments (including
+     * SMS, WhatsApp, and other channels) return an empty list. Each `downloadUrl` is generated
+     * fresh per request and expires — fetch the file promptly and do not cache the URL.
+     */
+    fun listAttachments(messageId: String): CompletableFuture<MessageListAttachmentsResponse> =
+        listAttachments(messageId, MessageListAttachmentsParams.none())
+
+    /** @see listAttachments */
+    fun listAttachments(
+        messageId: String,
+        params: MessageListAttachmentsParams = MessageListAttachmentsParams.none(),
+        requestOptions: RequestOptions = RequestOptions.none(),
+    ): CompletableFuture<MessageListAttachmentsResponse> =
+        listAttachments(params.toBuilder().messageId(messageId).build(), requestOptions)
+
+    /** @see listAttachments */
+    fun listAttachments(
+        messageId: String,
+        params: MessageListAttachmentsParams = MessageListAttachmentsParams.none(),
+    ): CompletableFuture<MessageListAttachmentsResponse> =
+        listAttachments(messageId, params, RequestOptions.none())
+
+    /** @see listAttachments */
+    fun listAttachments(
+        params: MessageListAttachmentsParams,
+        requestOptions: RequestOptions = RequestOptions.none(),
+    ): CompletableFuture<MessageListAttachmentsResponse>
+
+    /** @see listAttachments */
+    fun listAttachments(
+        params: MessageListAttachmentsParams
+    ): CompletableFuture<MessageListAttachmentsResponse> =
+        listAttachments(params, RequestOptions.none())
+
+    /** @see listAttachments */
+    fun listAttachments(
+        messageId: String,
+        requestOptions: RequestOptions,
+    ): CompletableFuture<MessageListAttachmentsResponse> =
+        listAttachments(messageId, MessageListAttachmentsParams.none(), requestOptions)
 
     /**
      * Send an emoji reaction to an existing WhatsApp message. Reactions are only supported for
@@ -271,6 +317,49 @@ interface MessageServiceAsync {
             requestOptions: RequestOptions
         ): CompletableFuture<HttpResponseFor<MessageListPageAsync>> =
             list(MessageListParams.none(), requestOptions)
+
+        /**
+         * Returns a raw HTTP response for `get /v1/messages/{messageId}/attachments`, but is
+         * otherwise the same as [MessageServiceAsync.listAttachments].
+         */
+        fun listAttachments(
+            messageId: String
+        ): CompletableFuture<HttpResponseFor<MessageListAttachmentsResponse>> =
+            listAttachments(messageId, MessageListAttachmentsParams.none())
+
+        /** @see listAttachments */
+        fun listAttachments(
+            messageId: String,
+            params: MessageListAttachmentsParams = MessageListAttachmentsParams.none(),
+            requestOptions: RequestOptions = RequestOptions.none(),
+        ): CompletableFuture<HttpResponseFor<MessageListAttachmentsResponse>> =
+            listAttachments(params.toBuilder().messageId(messageId).build(), requestOptions)
+
+        /** @see listAttachments */
+        fun listAttachments(
+            messageId: String,
+            params: MessageListAttachmentsParams = MessageListAttachmentsParams.none(),
+        ): CompletableFuture<HttpResponseFor<MessageListAttachmentsResponse>> =
+            listAttachments(messageId, params, RequestOptions.none())
+
+        /** @see listAttachments */
+        fun listAttachments(
+            params: MessageListAttachmentsParams,
+            requestOptions: RequestOptions = RequestOptions.none(),
+        ): CompletableFuture<HttpResponseFor<MessageListAttachmentsResponse>>
+
+        /** @see listAttachments */
+        fun listAttachments(
+            params: MessageListAttachmentsParams
+        ): CompletableFuture<HttpResponseFor<MessageListAttachmentsResponse>> =
+            listAttachments(params, RequestOptions.none())
+
+        /** @see listAttachments */
+        fun listAttachments(
+            messageId: String,
+            requestOptions: RequestOptions,
+        ): CompletableFuture<HttpResponseFor<MessageListAttachmentsResponse>> =
+            listAttachments(messageId, MessageListAttachmentsParams.none(), requestOptions)
 
         /**
          * Returns a raw HTTP response for `post /v1/messages/{messageId}/reactions`, but is
