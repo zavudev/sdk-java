@@ -84,6 +84,7 @@ internal class ProGuardCompatibilityTest {
                 .id("jd7x2k3m4n5p6q7r8s9t0")
                 .channel(Channel.AUTO)
                 .createdAt(OffsetDateTime.parse("2019-12-27T18:11:19.117Z"))
+                .direction(Message.Direction.INBOUND)
                 .messageType(MessageType.TEXT)
                 .status(MessageStatus.QUEUED)
                 .to("+56912345678")
