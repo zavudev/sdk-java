@@ -13,6 +13,7 @@ internal class ContactUpdateParamsTest {
         ContactUpdateParams.builder()
             .contactId("contactId")
             .defaultChannel(ContactUpdateParams.DefaultChannel.SMS)
+            .displayName("John Doe")
             .metadata(
                 ContactUpdateParams.Metadata.builder()
                     .putAdditionalProperty("foo", JsonValue.from("string"))
@@ -36,6 +37,7 @@ internal class ContactUpdateParamsTest {
             ContactUpdateParams.builder()
                 .contactId("contactId")
                 .defaultChannel(ContactUpdateParams.DefaultChannel.SMS)
+                .displayName("John Doe")
                 .metadata(
                     ContactUpdateParams.Metadata.builder()
                         .putAdditionalProperty("foo", JsonValue.from("string"))
@@ -46,6 +48,7 @@ internal class ContactUpdateParamsTest {
         val body = params._body()
 
         assertThat(body.defaultChannel()).contains(ContactUpdateParams.DefaultChannel.SMS)
+        assertThat(body.displayName()).contains("John Doe")
         assertThat(body.metadata())
             .contains(
                 ContactUpdateParams.Metadata.builder()

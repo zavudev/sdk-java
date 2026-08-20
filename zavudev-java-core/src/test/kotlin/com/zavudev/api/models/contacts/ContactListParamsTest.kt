@@ -10,7 +10,13 @@ internal class ContactListParamsTest {
 
     @Test
     fun create() {
-        ContactListParams.builder().cursor("cursor").limit(100L).phoneNumber("phoneNumber").build()
+        ContactListParams.builder()
+            .cursor("cursor")
+            .limit(100L)
+            .phoneNumber("phoneNumber")
+            .search("search")
+            .addTag("string")
+            .build()
     }
 
     @Test
@@ -20,6 +26,8 @@ internal class ContactListParamsTest {
                 .cursor("cursor")
                 .limit(100L)
                 .phoneNumber("phoneNumber")
+                .search("search")
+                .addTag("string")
                 .build()
 
         val queryParams = params._queryParams()
@@ -30,6 +38,8 @@ internal class ContactListParamsTest {
                     .put("cursor", "cursor")
                     .put("limit", "100")
                     .put("phoneNumber", "phoneNumber")
+                    .put("search", "search")
+                    .put("tag", listOf("string").joinToString(","))
                     .build()
             )
     }
