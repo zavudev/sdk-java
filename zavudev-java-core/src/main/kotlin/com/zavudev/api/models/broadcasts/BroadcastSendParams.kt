@@ -23,8 +23,8 @@ import kotlin.jvm.optionals.getOrNull
 /**
  * Start sending the broadcast immediately or schedule for later.
  *
- * **The account must be past the sandbox level to send, except on WhatsApp.** An account that has
- * verified nothing is refused with `403` and code `kyc_required` on every channel other than
+ * **The account must be past the unverified level to send, except on WhatsApp.** An account that
+ * has verified nothing is refused with `403` and code `kyc_required` on every channel other than
  * `whatsapp`. Any one of these lifts it: identity verification (KYC), a saved payment method, a
  * settled deposit, or a paid plan. Business verification (KYB) is not required to broadcast; it
  * gates 10DLC registration only. A `whatsapp` broadcast is exempt: it can only be built on a
