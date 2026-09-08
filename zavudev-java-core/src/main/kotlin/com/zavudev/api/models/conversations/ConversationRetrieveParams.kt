@@ -1,29 +1,23 @@
 // File generated from our OpenAPI spec by Stainless.
 
-package com.zavudev.api.models.contacts
+package com.zavudev.api.models.conversations
 
-import com.zavudev.api.core.JsonValue
 import com.zavudev.api.core.Params
 import com.zavudev.api.core.http.Headers
 import com.zavudev.api.core.http.QueryParams
-import com.zavudev.api.core.toImmutable
 import java.util.Objects
 import java.util.Optional
 import kotlin.jvm.optionals.getOrNull
 
-/** Dismiss the merge suggestion for a contact. */
-class ContactDismissMergeSuggestionParams
+/** Get conversation */
+class ConversationRetrieveParams
 private constructor(
-    private val contactId: String?,
+    private val conversationId: String?,
     private val additionalHeaders: Headers,
     private val additionalQueryParams: QueryParams,
-    private val additionalBodyProperties: Map<String, JsonValue>,
 ) : Params {
 
-    fun contactId(): Optional<String> = Optional.ofNullable(contactId)
-
-    /** Additional body properties to send with the request. */
-    fun _additionalBodyProperties(): Map<String, JsonValue> = additionalBodyProperties
+    fun conversationId(): Optional<String> = Optional.ofNullable(conversationId)
 
     /** Additional headers to send with the request. */
     fun _additionalHeaders(): Headers = additionalHeaders
@@ -35,39 +29,33 @@ private constructor(
 
     companion object {
 
-        @JvmStatic fun none(): ContactDismissMergeSuggestionParams = builder().build()
+        @JvmStatic fun none(): ConversationRetrieveParams = builder().build()
 
         /**
-         * Returns a mutable builder for constructing an instance of
-         * [ContactDismissMergeSuggestionParams].
+         * Returns a mutable builder for constructing an instance of [ConversationRetrieveParams].
          */
         @JvmStatic fun builder() = Builder()
     }
 
-    /** A builder for [ContactDismissMergeSuggestionParams]. */
+    /** A builder for [ConversationRetrieveParams]. */
     class Builder internal constructor() {
 
-        private var contactId: String? = null
+        private var conversationId: String? = null
         private var additionalHeaders: Headers.Builder = Headers.builder()
         private var additionalQueryParams: QueryParams.Builder = QueryParams.builder()
-        private var additionalBodyProperties: MutableMap<String, JsonValue> = mutableMapOf()
 
         @JvmSynthetic
-        internal fun from(
-            contactDismissMergeSuggestionParams: ContactDismissMergeSuggestionParams
-        ) = apply {
-            contactId = contactDismissMergeSuggestionParams.contactId
-            additionalHeaders = contactDismissMergeSuggestionParams.additionalHeaders.toBuilder()
-            additionalQueryParams =
-                contactDismissMergeSuggestionParams.additionalQueryParams.toBuilder()
-            additionalBodyProperties =
-                contactDismissMergeSuggestionParams.additionalBodyProperties.toMutableMap()
+        internal fun from(conversationRetrieveParams: ConversationRetrieveParams) = apply {
+            conversationId = conversationRetrieveParams.conversationId
+            additionalHeaders = conversationRetrieveParams.additionalHeaders.toBuilder()
+            additionalQueryParams = conversationRetrieveParams.additionalQueryParams.toBuilder()
         }
 
-        fun contactId(contactId: String?) = apply { this.contactId = contactId }
+        fun conversationId(conversationId: String?) = apply { this.conversationId = conversationId }
 
-        /** Alias for calling [Builder.contactId] with `contactId.orElse(null)`. */
-        fun contactId(contactId: Optional<String>) = contactId(contactId.getOrNull())
+        /** Alias for calling [Builder.conversationId] with `conversationId.orElse(null)`. */
+        fun conversationId(conversationId: Optional<String>) =
+            conversationId(conversationId.getOrNull())
 
         fun additionalHeaders(additionalHeaders: Headers) = apply {
             this.additionalHeaders.clear()
@@ -167,48 +155,22 @@ private constructor(
             additionalQueryParams.removeAll(keys)
         }
 
-        fun additionalBodyProperties(additionalBodyProperties: Map<String, JsonValue>) = apply {
-            this.additionalBodyProperties.clear()
-            putAllAdditionalBodyProperties(additionalBodyProperties)
-        }
-
-        fun putAdditionalBodyProperty(key: String, value: JsonValue) = apply {
-            additionalBodyProperties.put(key, value)
-        }
-
-        fun putAllAdditionalBodyProperties(additionalBodyProperties: Map<String, JsonValue>) =
-            apply {
-                this.additionalBodyProperties.putAll(additionalBodyProperties)
-            }
-
-        fun removeAdditionalBodyProperty(key: String) = apply {
-            additionalBodyProperties.remove(key)
-        }
-
-        fun removeAllAdditionalBodyProperties(keys: Set<String>) = apply {
-            keys.forEach(::removeAdditionalBodyProperty)
-        }
-
         /**
-         * Returns an immutable instance of [ContactDismissMergeSuggestionParams].
+         * Returns an immutable instance of [ConversationRetrieveParams].
          *
          * Further updates to this [Builder] will not mutate the returned instance.
          */
-        fun build(): ContactDismissMergeSuggestionParams =
-            ContactDismissMergeSuggestionParams(
-                contactId,
+        fun build(): ConversationRetrieveParams =
+            ConversationRetrieveParams(
+                conversationId,
                 additionalHeaders.build(),
                 additionalQueryParams.build(),
-                additionalBodyProperties.toImmutable(),
             )
     }
 
-    fun _body(): Optional<Map<String, JsonValue>> =
-        Optional.ofNullable(additionalBodyProperties.ifEmpty { null })
-
     fun _pathParam(index: Int): String =
         when (index) {
-            0 -> contactId ?: ""
+            0 -> conversationId ?: ""
             else -> ""
         }
 
@@ -221,16 +183,15 @@ private constructor(
             return true
         }
 
-        return other is ContactDismissMergeSuggestionParams &&
-            contactId == other.contactId &&
+        return other is ConversationRetrieveParams &&
+            conversationId == other.conversationId &&
             additionalHeaders == other.additionalHeaders &&
-            additionalQueryParams == other.additionalQueryParams &&
-            additionalBodyProperties == other.additionalBodyProperties
+            additionalQueryParams == other.additionalQueryParams
     }
 
     override fun hashCode(): Int =
-        Objects.hash(contactId, additionalHeaders, additionalQueryParams, additionalBodyProperties)
+        Objects.hash(conversationId, additionalHeaders, additionalQueryParams)
 
     override fun toString() =
-        "ContactDismissMergeSuggestionParams{contactId=$contactId, additionalHeaders=$additionalHeaders, additionalQueryParams=$additionalQueryParams, additionalBodyProperties=$additionalBodyProperties}"
+        "ConversationRetrieveParams{conversationId=$conversationId, additionalHeaders=$additionalHeaders, additionalQueryParams=$additionalQueryParams}"
 }

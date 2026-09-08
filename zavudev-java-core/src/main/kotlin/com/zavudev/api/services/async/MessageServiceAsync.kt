@@ -5,6 +5,8 @@ package com.zavudev.api.services.async
 import com.zavudev.api.core.ClientOptions
 import com.zavudev.api.core.RequestOptions
 import com.zavudev.api.core.http.HttpResponseFor
+import com.zavudev.api.models.messages.MessageListAttachmentsParams
+import com.zavudev.api.models.messages.MessageListAttachmentsResponse
 import com.zavudev.api.models.messages.MessageListPageAsync
 import com.zavudev.api.models.messages.MessageListParams
 import com.zavudev.api.models.messages.MessageReactParams
@@ -84,6 +86,50 @@ interface MessageServiceAsync {
         list(MessageListParams.none(), requestOptions)
 
     /**
+     * List the stored file attachments for an email message and get a short-lived signed
+     * `downloadUrl` for each. Works for both inbound emails (received via `message.inbound`) and
+     * outbound emails you sent with attachments. Messages without stored attachments (including
+     * SMS, WhatsApp, and other channels) return an empty list. Each `downloadUrl` is generated
+     * fresh per request and expires — fetch the file promptly and do not cache the URL.
+     */
+    fun listAttachments(messageId: String): CompletableFuture<MessageListAttachmentsResponse> =
+        listAttachments(messageId, MessageListAttachmentsParams.none())
+
+    /** @see listAttachments */
+    fun listAttachments(
+        messageId: String,
+        params: MessageListAttachmentsParams = MessageListAttachmentsParams.none(),
+        requestOptions: RequestOptions = RequestOptions.none(),
+    ): CompletableFuture<MessageListAttachmentsResponse> =
+        listAttachments(params.toBuilder().messageId(messageId).build(), requestOptions)
+
+    /** @see listAttachments */
+    fun listAttachments(
+        messageId: String,
+        params: MessageListAttachmentsParams = MessageListAttachmentsParams.none(),
+    ): CompletableFuture<MessageListAttachmentsResponse> =
+        listAttachments(messageId, params, RequestOptions.none())
+
+    /** @see listAttachments */
+    fun listAttachments(
+        params: MessageListAttachmentsParams,
+        requestOptions: RequestOptions = RequestOptions.none(),
+    ): CompletableFuture<MessageListAttachmentsResponse>
+
+    /** @see listAttachments */
+    fun listAttachments(
+        params: MessageListAttachmentsParams
+    ): CompletableFuture<MessageListAttachmentsResponse> =
+        listAttachments(params, RequestOptions.none())
+
+    /** @see listAttachments */
+    fun listAttachments(
+        messageId: String,
+        requestOptions: RequestOptions,
+    ): CompletableFuture<MessageListAttachmentsResponse> =
+        listAttachments(messageId, MessageListAttachmentsParams.none(), requestOptions)
+
+    /**
      * Send an emoji reaction to an existing WhatsApp message. Reactions are only supported for
      * WhatsApp messages.
      */
@@ -131,6 +177,30 @@ interface MessageServiceAsync {
      *   at 3,000 emails/month and 100/day. Teams on earlier plans keep their original email quotas
      *   instead
      * - SMS and voice are billed per message from your balance on every plan
+     *
+     * **Account verification and daily limits:**
+     * - A brand-new account can send on every channel immediately, but `sms`, `sms_oneway` and
+     *   `voice` reach only the phone numbers the project has verified. Sending elsewhere returns
+     *   `403` with code `destination_not_verified`; `details.verifiedNumbers` lists the numbers
+     *   that are reachable. A number is verified from the dashboard's Sandbox screen: generate a
+     *   code and send the pre-filled WhatsApp message from that phone to Zavu's sandbox number. One
+     *   verification covers WhatsApp, SMS and calls, up to 5 numbers per project. To send to any
+     *   destination, do any one of these: verify your identity, add a payment method, settle a
+     *   deposit, or subscribe to a paid plan. Business verification (KYB) is never required to send
+     * - Daily ceilings apply per channel group and rise with verification. An account that has
+     *   verified nothing: 25/day across `sms` + `sms_oneway`, 5/day for `voice`, 100/day across
+     *   WhatsApp, Telegram, Instagram and Messenger combined. Past that floor: 200/day for SMS, or
+     *   10,000/day once identity or business verification is approved (or a higher limit agreed for
+     *   your account); 50/day voice and 250/day conversational on Free. **Paid plans have no voice
+     *   or conversational daily ceiling.** Over a ceiling, sends return `429` with code
+     *   `daily_limit_exceeded` and `details.limit`; the count resets at 00:00 UTC
+     * - The daily ceiling never reduces the monthly allowance: 100/day on the conversational group
+     *   still reaches the 2,000 monthly A2P messages Free includes
+     * - Email needs no account verification here: a sender with a verified domain sends from day
+     *   one, within the plan quota (100/day and 3,000/month on Free). Over the daily quota it
+     *   returns `429` with code `daily_limit_exceeded`. Email broadcasts are the exception: they
+     *   need the account past the unverified level, see `POST /v1/broadcasts/{broadcastId}/send`
+     * - Full reference: https://docs.zavu.dev/concepts/sending-limits
      *
      * **Email recipient pre-flight:** Email messages are validated automatically before dispatch.
      * Sends that would be a guaranteed hard bounce are failed instead of sent, protecting your
@@ -271,6 +341,49 @@ interface MessageServiceAsync {
             requestOptions: RequestOptions
         ): CompletableFuture<HttpResponseFor<MessageListPageAsync>> =
             list(MessageListParams.none(), requestOptions)
+
+        /**
+         * Returns a raw HTTP response for `get /v1/messages/{messageId}/attachments`, but is
+         * otherwise the same as [MessageServiceAsync.listAttachments].
+         */
+        fun listAttachments(
+            messageId: String
+        ): CompletableFuture<HttpResponseFor<MessageListAttachmentsResponse>> =
+            listAttachments(messageId, MessageListAttachmentsParams.none())
+
+        /** @see listAttachments */
+        fun listAttachments(
+            messageId: String,
+            params: MessageListAttachmentsParams = MessageListAttachmentsParams.none(),
+            requestOptions: RequestOptions = RequestOptions.none(),
+        ): CompletableFuture<HttpResponseFor<MessageListAttachmentsResponse>> =
+            listAttachments(params.toBuilder().messageId(messageId).build(), requestOptions)
+
+        /** @see listAttachments */
+        fun listAttachments(
+            messageId: String,
+            params: MessageListAttachmentsParams = MessageListAttachmentsParams.none(),
+        ): CompletableFuture<HttpResponseFor<MessageListAttachmentsResponse>> =
+            listAttachments(messageId, params, RequestOptions.none())
+
+        /** @see listAttachments */
+        fun listAttachments(
+            params: MessageListAttachmentsParams,
+            requestOptions: RequestOptions = RequestOptions.none(),
+        ): CompletableFuture<HttpResponseFor<MessageListAttachmentsResponse>>
+
+        /** @see listAttachments */
+        fun listAttachments(
+            params: MessageListAttachmentsParams
+        ): CompletableFuture<HttpResponseFor<MessageListAttachmentsResponse>> =
+            listAttachments(params, RequestOptions.none())
+
+        /** @see listAttachments */
+        fun listAttachments(
+            messageId: String,
+            requestOptions: RequestOptions,
+        ): CompletableFuture<HttpResponseFor<MessageListAttachmentsResponse>> =
+            listAttachments(messageId, MessageListAttachmentsParams.none(), requestOptions)
 
         /**
          * Returns a raw HTTP response for `post /v1/messages/{messageId}/reactions`, but is

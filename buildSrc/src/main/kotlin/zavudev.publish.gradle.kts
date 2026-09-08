@@ -27,9 +27,9 @@ configure<PublishingExtension> {
                 }
 
                 scm {
-                    connection.set("scm:git:git://github.com/stainless-sdks/zavudev-java.git")
-                    developerConnection.set("scm:git:git://github.com/stainless-sdks/zavudev-java.git")
-                    url.set("https://github.com/stainless-sdks/zavudev-java")
+                    connection.set("scm:git:git://github.com/zavudev/sdk-java.git")
+                    developerConnection.set("scm:git:git://github.com/zavudev/sdk-java.git")
+                    url.set("https://github.com/zavudev/sdk-java")
                 }
 
                 versionMapping {

@@ -11,6 +11,10 @@ import com.zavudev.api.models.senders.agent.knowledgebases.documents.DocumentCre
 import com.zavudev.api.models.senders.agent.knowledgebases.documents.DocumentDeleteParams
 import com.zavudev.api.models.senders.agent.knowledgebases.documents.DocumentListPageAsync
 import com.zavudev.api.models.senders.agent.knowledgebases.documents.DocumentListParams
+import com.zavudev.api.models.senders.agent.knowledgebases.documents.DocumentRetrieveDocumentParams
+import com.zavudev.api.models.senders.agent.knowledgebases.documents.DocumentRetrieveDocumentResponse
+import com.zavudev.api.models.senders.agent.knowledgebases.documents.DocumentUpdateDocumentParams
+import com.zavudev.api.models.senders.agent.knowledgebases.documents.DocumentUpdateDocumentResponse
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
 
@@ -94,6 +98,60 @@ interface DocumentServiceAsync {
         params: DocumentDeleteParams,
         requestOptions: RequestOptions = RequestOptions.none(),
     ): CompletableFuture<Void?>
+
+    /** Get a single document from a knowledge base. */
+    fun retrieveDocument(
+        docId: String,
+        params: DocumentRetrieveDocumentParams,
+    ): CompletableFuture<DocumentRetrieveDocumentResponse> =
+        retrieveDocument(docId, params, RequestOptions.none())
+
+    /** @see retrieveDocument */
+    fun retrieveDocument(
+        docId: String,
+        params: DocumentRetrieveDocumentParams,
+        requestOptions: RequestOptions = RequestOptions.none(),
+    ): CompletableFuture<DocumentRetrieveDocumentResponse> =
+        retrieveDocument(params.toBuilder().docId(docId).build(), requestOptions)
+
+    /** @see retrieveDocument */
+    fun retrieveDocument(
+        params: DocumentRetrieveDocumentParams
+    ): CompletableFuture<DocumentRetrieveDocumentResponse> =
+        retrieveDocument(params, RequestOptions.none())
+
+    /** @see retrieveDocument */
+    fun retrieveDocument(
+        params: DocumentRetrieveDocumentParams,
+        requestOptions: RequestOptions = RequestOptions.none(),
+    ): CompletableFuture<DocumentRetrieveDocumentResponse>
+
+    /** Update a document's title or content. Updating content reprocesses the document for RAG. */
+    fun updateDocument(
+        docId: String,
+        params: DocumentUpdateDocumentParams,
+    ): CompletableFuture<DocumentUpdateDocumentResponse> =
+        updateDocument(docId, params, RequestOptions.none())
+
+    /** @see updateDocument */
+    fun updateDocument(
+        docId: String,
+        params: DocumentUpdateDocumentParams,
+        requestOptions: RequestOptions = RequestOptions.none(),
+    ): CompletableFuture<DocumentUpdateDocumentResponse> =
+        updateDocument(params.toBuilder().docId(docId).build(), requestOptions)
+
+    /** @see updateDocument */
+    fun updateDocument(
+        params: DocumentUpdateDocumentParams
+    ): CompletableFuture<DocumentUpdateDocumentResponse> =
+        updateDocument(params, RequestOptions.none())
+
+    /** @see updateDocument */
+    fun updateDocument(
+        params: DocumentUpdateDocumentParams,
+        requestOptions: RequestOptions = RequestOptions.none(),
+    ): CompletableFuture<DocumentUpdateDocumentResponse>
 
     /**
      * A view of [DocumentServiceAsync] that provides access to raw HTTP responses for each method.
@@ -196,5 +254,67 @@ interface DocumentServiceAsync {
             params: DocumentDeleteParams,
             requestOptions: RequestOptions = RequestOptions.none(),
         ): CompletableFuture<HttpResponse>
+
+        /**
+         * Returns a raw HTTP response for `get
+         * /v1/senders/{senderId}/agent/knowledge-bases/{kbId}/documents/{docId}`, but is otherwise
+         * the same as [DocumentServiceAsync.retrieveDocument].
+         */
+        fun retrieveDocument(
+            docId: String,
+            params: DocumentRetrieveDocumentParams,
+        ): CompletableFuture<HttpResponseFor<DocumentRetrieveDocumentResponse>> =
+            retrieveDocument(docId, params, RequestOptions.none())
+
+        /** @see retrieveDocument */
+        fun retrieveDocument(
+            docId: String,
+            params: DocumentRetrieveDocumentParams,
+            requestOptions: RequestOptions = RequestOptions.none(),
+        ): CompletableFuture<HttpResponseFor<DocumentRetrieveDocumentResponse>> =
+            retrieveDocument(params.toBuilder().docId(docId).build(), requestOptions)
+
+        /** @see retrieveDocument */
+        fun retrieveDocument(
+            params: DocumentRetrieveDocumentParams
+        ): CompletableFuture<HttpResponseFor<DocumentRetrieveDocumentResponse>> =
+            retrieveDocument(params, RequestOptions.none())
+
+        /** @see retrieveDocument */
+        fun retrieveDocument(
+            params: DocumentRetrieveDocumentParams,
+            requestOptions: RequestOptions = RequestOptions.none(),
+        ): CompletableFuture<HttpResponseFor<DocumentRetrieveDocumentResponse>>
+
+        /**
+         * Returns a raw HTTP response for `patch
+         * /v1/senders/{senderId}/agent/knowledge-bases/{kbId}/documents/{docId}`, but is otherwise
+         * the same as [DocumentServiceAsync.updateDocument].
+         */
+        fun updateDocument(
+            docId: String,
+            params: DocumentUpdateDocumentParams,
+        ): CompletableFuture<HttpResponseFor<DocumentUpdateDocumentResponse>> =
+            updateDocument(docId, params, RequestOptions.none())
+
+        /** @see updateDocument */
+        fun updateDocument(
+            docId: String,
+            params: DocumentUpdateDocumentParams,
+            requestOptions: RequestOptions = RequestOptions.none(),
+        ): CompletableFuture<HttpResponseFor<DocumentUpdateDocumentResponse>> =
+            updateDocument(params.toBuilder().docId(docId).build(), requestOptions)
+
+        /** @see updateDocument */
+        fun updateDocument(
+            params: DocumentUpdateDocumentParams
+        ): CompletableFuture<HttpResponseFor<DocumentUpdateDocumentResponse>> =
+            updateDocument(params, RequestOptions.none())
+
+        /** @see updateDocument */
+        fun updateDocument(
+            params: DocumentUpdateDocumentParams,
+            requestOptions: RequestOptions = RequestOptions.none(),
+        ): CompletableFuture<HttpResponseFor<DocumentUpdateDocumentResponse>>
     }
 }
