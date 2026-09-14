@@ -14,6 +14,8 @@ import com.zavudev.api.models.templates.TemplateListPage
 import com.zavudev.api.models.templates.TemplateListParams
 import com.zavudev.api.models.templates.TemplateRetrieveParams
 import com.zavudev.api.models.templates.TemplateSubmitParams
+import com.zavudev.api.models.templates.TemplateSyncParams
+import com.zavudev.api.models.templates.TemplateSyncResponse
 import java.util.function.Consumer
 
 interface TemplateService {
@@ -131,6 +133,42 @@ interface TemplateService {
         params: TemplateSubmitParams,
         requestOptions: RequestOptions = RequestOptions.none(),
     ): Template
+
+    /**
+     * Reconcile this project's templates against WhatsApp. Two things happen per connected WhatsApp
+     * Business Account: templates that exist on Meta but not in Zavu are imported (or linked to an
+     * existing template with the same name), and the approval status of the templates Zavu already
+     * knows about is refreshed from Meta.
+     *
+     * This is what to call when a template was created outside Zavu — in Meta Business Manager, or
+     * by another tool — or when a `template.status_changed` webhook was missed and a template is
+     * stuck in `pending`. Status changes normally arrive by webhook; this endpoint is the recovery
+     * path and the only path for a template Zavu never created.
+     *
+     * Templates that Meta reports as rejected or disabled are not imported; they are counted in
+     * `skipped`. Existing local templates are matched first by Meta template ID, then by name.
+     *
+     * By default every sender in the project with a WhatsApp Business Account is synced. Pass
+     * `senderId` to sync only that sender's account. The call is synchronous — it waits for Meta
+     * and returns what changed — so it can take a few seconds per account. A failure on one account
+     * does not fail the request: it is reported in `errors` and the remaining accounts are still
+     * synced.
+     */
+    fun sync(): TemplateSyncResponse = sync(TemplateSyncParams.none())
+
+    /** @see sync */
+    fun sync(
+        params: TemplateSyncParams = TemplateSyncParams.none(),
+        requestOptions: RequestOptions = RequestOptions.none(),
+    ): TemplateSyncResponse
+
+    /** @see sync */
+    fun sync(params: TemplateSyncParams = TemplateSyncParams.none()): TemplateSyncResponse =
+        sync(params, RequestOptions.none())
+
+    /** @see sync */
+    fun sync(requestOptions: RequestOptions): TemplateSyncResponse =
+        sync(TemplateSyncParams.none(), requestOptions)
 
     /** A view of [TemplateService] that provides access to raw HTTP responses for each method. */
     interface WithRawResponse {
@@ -294,5 +332,30 @@ interface TemplateService {
             params: TemplateSubmitParams,
             requestOptions: RequestOptions = RequestOptions.none(),
         ): HttpResponseFor<Template>
+
+        /**
+         * Returns a raw HTTP response for `post /v1/templates/sync`, but is otherwise the same as
+         * [TemplateService.sync].
+         */
+        @MustBeClosed
+        fun sync(): HttpResponseFor<TemplateSyncResponse> = sync(TemplateSyncParams.none())
+
+        /** @see sync */
+        @MustBeClosed
+        fun sync(
+            params: TemplateSyncParams = TemplateSyncParams.none(),
+            requestOptions: RequestOptions = RequestOptions.none(),
+        ): HttpResponseFor<TemplateSyncResponse>
+
+        /** @see sync */
+        @MustBeClosed
+        fun sync(
+            params: TemplateSyncParams = TemplateSyncParams.none()
+        ): HttpResponseFor<TemplateSyncResponse> = sync(params, RequestOptions.none())
+
+        /** @see sync */
+        @MustBeClosed
+        fun sync(requestOptions: RequestOptions): HttpResponseFor<TemplateSyncResponse> =
+            sync(TemplateSyncParams.none(), requestOptions)
     }
 }

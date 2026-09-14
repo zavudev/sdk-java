@@ -35,6 +35,8 @@ import com.zavudev.api.models.senders.WebhookSecretResponse
 import com.zavudev.api.models.senders.WhatsappBusinessProfileResponse
 import com.zavudev.api.services.blocking.senders.AgentService
 import com.zavudev.api.services.blocking.senders.AgentServiceImpl
+import com.zavudev.api.services.blocking.senders.TelegramService
+import com.zavudev.api.services.blocking.senders.TelegramServiceImpl
 import com.zavudev.api.services.blocking.senders.WhatsappSyncService
 import com.zavudev.api.services.blocking.senders.WhatsappSyncServiceImpl
 import java.util.function.Consumer
@@ -51,6 +53,8 @@ class SenderServiceImpl internal constructor(private val clientOptions: ClientOp
 
     private val whatsappSync: WhatsappSyncService by lazy { WhatsappSyncServiceImpl(clientOptions) }
 
+    private val telegram: TelegramService by lazy { TelegramServiceImpl(clientOptions) }
+
     override fun withRawResponse(): SenderService.WithRawResponse = withRawResponse
 
     override fun withOptions(modifier: Consumer<ClientOptions.Builder>): SenderService =
@@ -59,6 +63,8 @@ class SenderServiceImpl internal constructor(private val clientOptions: ClientOp
     override fun agent(): AgentService = agent
 
     override fun whatsappSync(): WhatsappSyncService = whatsappSync
+
+    override fun telegram(): TelegramService = telegram
 
     override fun create(params: SenderCreateParams, requestOptions: RequestOptions): Sender =
         // post /v1/senders
@@ -123,6 +129,10 @@ class SenderServiceImpl internal constructor(private val clientOptions: ClientOp
             WhatsappSyncServiceImpl.WithRawResponseImpl(clientOptions)
         }
 
+        private val telegram: TelegramService.WithRawResponse by lazy {
+            TelegramServiceImpl.WithRawResponseImpl(clientOptions)
+        }
+
         override fun withOptions(
             modifier: Consumer<ClientOptions.Builder>
         ): SenderService.WithRawResponse =
@@ -133,6 +143,8 @@ class SenderServiceImpl internal constructor(private val clientOptions: ClientOp
         override fun agent(): AgentService.WithRawResponse = agent
 
         override fun whatsappSync(): WhatsappSyncService.WithRawResponse = whatsappSync
+
+        override fun telegram(): TelegramService.WithRawResponse = telegram
 
         private val createHandler: Handler<Sender> = jsonHandler<Sender>(clientOptions.jsonMapper)
 

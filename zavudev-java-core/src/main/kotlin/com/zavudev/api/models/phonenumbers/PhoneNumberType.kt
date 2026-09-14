@@ -7,6 +7,11 @@ import com.zavudev.api.core.Enum
 import com.zavudev.api.core.JsonField
 import com.zavudev.api.errors.ZavudevInvalidDataException
 
+/**
+ * Type of phone number. `mobile` is stocked in countries where no geographic (`local`) or
+ * non-geographic (`national`) inventory exists, and in several markets it is the only type that can
+ * receive SMS.
+ */
 class PhoneNumberType @JsonCreator private constructor(private val value: JsonField<String>) :
     Enum {
 
@@ -27,6 +32,8 @@ class PhoneNumberType @JsonCreator private constructor(private val value: JsonFi
 
         @JvmField val TOLL_FREE = of("tollFree")
 
+        @JvmField val MOBILE = of("mobile")
+
         @JvmStatic fun of(value: String) = PhoneNumberType(JsonField.of(value))
     }
 
@@ -35,6 +42,7 @@ class PhoneNumberType @JsonCreator private constructor(private val value: JsonFi
         LOCAL,
         NATIONAL,
         TOLL_FREE,
+        MOBILE,
     }
 
     /**
@@ -50,6 +58,7 @@ class PhoneNumberType @JsonCreator private constructor(private val value: JsonFi
         LOCAL,
         NATIONAL,
         TOLL_FREE,
+        MOBILE,
         /**
          * An enum member indicating that [PhoneNumberType] was instantiated with an unknown value.
          */
@@ -68,6 +77,7 @@ class PhoneNumberType @JsonCreator private constructor(private val value: JsonFi
             LOCAL -> Value.LOCAL
             NATIONAL -> Value.NATIONAL
             TOLL_FREE -> Value.TOLL_FREE
+            MOBILE -> Value.MOBILE
             else -> Value._UNKNOWN
         }
 
@@ -84,6 +94,7 @@ class PhoneNumberType @JsonCreator private constructor(private val value: JsonFi
             LOCAL -> Known.LOCAL
             NATIONAL -> Known.NATIONAL
             TOLL_FREE -> Known.TOLL_FREE
+            MOBILE -> Known.MOBILE
             else -> throw ZavudevInvalidDataException("Unknown PhoneNumberType: $value")
         }
 

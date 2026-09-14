@@ -25,6 +25,8 @@ import com.zavudev.api.models.templates.TemplateListPageResponse
 import com.zavudev.api.models.templates.TemplateListParams
 import com.zavudev.api.models.templates.TemplateRetrieveParams
 import com.zavudev.api.models.templates.TemplateSubmitParams
+import com.zavudev.api.models.templates.TemplateSyncParams
+import com.zavudev.api.models.templates.TemplateSyncResponse
 import java.util.function.Consumer
 import kotlin.jvm.optionals.getOrNull
 
@@ -66,6 +68,13 @@ class TemplateServiceImpl internal constructor(private val clientOptions: Client
     override fun submit(params: TemplateSubmitParams, requestOptions: RequestOptions): Template =
         // post /v1/templates/{templateId}/submit
         withRawResponse().submit(params, requestOptions).parse()
+
+    override fun sync(
+        params: TemplateSyncParams,
+        requestOptions: RequestOptions,
+    ): TemplateSyncResponse =
+        // post /v1/templates/sync
+        withRawResponse().sync(params, requestOptions).parse()
 
     class WithRawResponseImpl internal constructor(private val clientOptions: ClientOptions) :
         TemplateService.WithRawResponse {
@@ -219,6 +228,34 @@ class TemplateServiceImpl internal constructor(private val clientOptions: Client
             return errorHandler.handle(response).parseable {
                 response
                     .use { submitHandler.handle(it) }
+                    .also {
+                        if (requestOptions.responseValidation!!) {
+                            it.validate()
+                        }
+                    }
+            }
+        }
+
+        private val syncHandler: Handler<TemplateSyncResponse> =
+            jsonHandler<TemplateSyncResponse>(clientOptions.jsonMapper)
+
+        override fun sync(
+            params: TemplateSyncParams,
+            requestOptions: RequestOptions,
+        ): HttpResponseFor<TemplateSyncResponse> {
+            val request =
+                HttpRequest.builder()
+                    .method(HttpMethod.POST)
+                    .baseUrl(clientOptions.baseUrl())
+                    .addPathSegments("v1", "templates", "sync")
+                    .body(json(clientOptions.jsonMapper, params._body()))
+                    .build()
+                    .prepare(clientOptions, params)
+            val requestOptions = requestOptions.applyDefaults(RequestOptions.from(clientOptions))
+            val response = clientOptions.httpClient.execute(request, requestOptions)
+            return errorHandler.handle(response).parseable {
+                response
+                    .use { syncHandler.handle(it) }
                     .also {
                         if (requestOptions.responseValidation!!) {
                             it.validate()

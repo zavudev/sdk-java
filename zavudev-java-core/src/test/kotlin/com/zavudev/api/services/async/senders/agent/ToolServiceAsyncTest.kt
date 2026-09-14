@@ -6,6 +6,7 @@ import com.zavudev.api.client.okhttp.ZavudevOkHttpClientAsync
 import com.zavudev.api.core.JsonValue
 import com.zavudev.api.models.senders.agent.tools.ToolCreateParams
 import com.zavudev.api.models.senders.agent.tools.ToolDeleteParams
+import com.zavudev.api.models.senders.agent.tools.ToolListTestRunsParams
 import com.zavudev.api.models.senders.agent.tools.ToolParameters
 import com.zavudev.api.models.senders.agent.tools.ToolRetrieveParams
 import com.zavudev.api.models.senders.agent.tools.ToolTestParams
@@ -134,6 +135,25 @@ internal class ToolServiceAsyncTest {
             )
 
         val response = future.get()
+    }
+
+    @Disabled("Mock server tests are disabled")
+    @Test
+    fun listTestRuns() {
+        val client = ZavudevOkHttpClientAsync.builder().apiKey("My API Key").build()
+        val toolServiceAsync = client.senders().agent().tools()
+
+        val responseFuture =
+            toolServiceAsync.listTestRuns(
+                ToolListTestRunsParams.builder()
+                    .senderId("senderId")
+                    .toolId("toolId")
+                    .limit(100L)
+                    .build()
+            )
+
+        val response = responseFuture.get()
+        response.validate()
     }
 
     @Disabled("Mock server tests are disabled")

@@ -20,7 +20,6 @@ import com.zavudev.api.core.prepare
 import com.zavudev.api.models.contacts.Contact
 import com.zavudev.api.models.contacts.ContactCreateParams
 import com.zavudev.api.models.contacts.ContactDeleteParams
-import com.zavudev.api.models.contacts.ContactDismissMergeSuggestionParams
 import com.zavudev.api.models.contacts.ContactListPage
 import com.zavudev.api.models.contacts.ContactListPageResponse
 import com.zavudev.api.models.contacts.ContactListParams
@@ -68,14 +67,6 @@ class ContactServiceImpl internal constructor(private val clientOptions: ClientO
     override fun delete(params: ContactDeleteParams, requestOptions: RequestOptions) {
         // delete /v1/contacts/{contactId}
         withRawResponse().delete(params, requestOptions)
-    }
-
-    override fun dismissMergeSuggestion(
-        params: ContactDismissMergeSuggestionParams,
-        requestOptions: RequestOptions,
-    ) {
-        // delete /v1/contacts/{contactId}/merge-suggestion
-        withRawResponse().dismissMergeSuggestion(params, requestOptions)
     }
 
     override fun merge(params: ContactMergeParams, requestOptions: RequestOptions): Contact =
@@ -250,30 +241,6 @@ class ContactServiceImpl internal constructor(private val clientOptions: ClientO
             val response = clientOptions.httpClient.execute(request, requestOptions)
             return errorHandler.handle(response).parseable {
                 response.use { deleteHandler.handle(it) }
-            }
-        }
-
-        private val dismissMergeSuggestionHandler: Handler<Void?> = emptyHandler()
-
-        override fun dismissMergeSuggestion(
-            params: ContactDismissMergeSuggestionParams,
-            requestOptions: RequestOptions,
-        ): HttpResponse {
-            // We check here instead of in the params builder because this can be specified
-            // positionally or in the params class.
-            checkRequired("contactId", params.contactId().getOrNull())
-            val request =
-                HttpRequest.builder()
-                    .method(HttpMethod.DELETE)
-                    .baseUrl(clientOptions.baseUrl())
-                    .addPathSegments("v1", "contacts", params._pathParam(0), "merge-suggestion")
-                    .apply { params._body().ifPresent { body(json(clientOptions.jsonMapper, it)) } }
-                    .build()
-                    .prepare(clientOptions, params)
-            val requestOptions = requestOptions.applyDefaults(RequestOptions.from(clientOptions))
-            val response = clientOptions.httpClient.execute(request, requestOptions)
-            return errorHandler.handle(response).parseable {
-                response.use { dismissMergeSuggestionHandler.handle(it) }
             }
         }
 

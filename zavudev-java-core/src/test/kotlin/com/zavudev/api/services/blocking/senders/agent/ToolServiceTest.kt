@@ -6,6 +6,7 @@ import com.zavudev.api.client.okhttp.ZavudevOkHttpClient
 import com.zavudev.api.core.JsonValue
 import com.zavudev.api.models.senders.agent.tools.ToolCreateParams
 import com.zavudev.api.models.senders.agent.tools.ToolDeleteParams
+import com.zavudev.api.models.senders.agent.tools.ToolListTestRunsParams
 import com.zavudev.api.models.senders.agent.tools.ToolParameters
 import com.zavudev.api.models.senders.agent.tools.ToolRetrieveParams
 import com.zavudev.api.models.senders.agent.tools.ToolTestParams
@@ -125,6 +126,24 @@ internal class ToolServiceTest {
         val toolService = client.senders().agent().tools()
 
         toolService.delete(ToolDeleteParams.builder().senderId("senderId").toolId("toolId").build())
+    }
+
+    @Disabled("Mock server tests are disabled")
+    @Test
+    fun listTestRuns() {
+        val client = ZavudevOkHttpClient.builder().apiKey("My API Key").build()
+        val toolService = client.senders().agent().tools()
+
+        val response =
+            toolService.listTestRuns(
+                ToolListTestRunsParams.builder()
+                    .senderId("senderId")
+                    .toolId("toolId")
+                    .limit(100L)
+                    .build()
+            )
+
+        response.validate()
     }
 
     @Disabled("Mock server tests are disabled")

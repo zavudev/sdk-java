@@ -23,12 +23,16 @@ import com.zavudev.api.models.senders.agent.tools.ToolDeleteParams
 import com.zavudev.api.models.senders.agent.tools.ToolListPageAsync
 import com.zavudev.api.models.senders.agent.tools.ToolListPageResponse
 import com.zavudev.api.models.senders.agent.tools.ToolListParams
+import com.zavudev.api.models.senders.agent.tools.ToolListTestRunsParams
+import com.zavudev.api.models.senders.agent.tools.ToolListTestRunsResponse
 import com.zavudev.api.models.senders.agent.tools.ToolRetrieveParams
 import com.zavudev.api.models.senders.agent.tools.ToolRetrieveResponse
 import com.zavudev.api.models.senders.agent.tools.ToolTestParams
 import com.zavudev.api.models.senders.agent.tools.ToolTestResponse
 import com.zavudev.api.models.senders.agent.tools.ToolUpdateParams
 import com.zavudev.api.models.senders.agent.tools.ToolUpdateResponse
+import com.zavudev.api.services.async.senders.agent.tools.WebhookServiceAsync
+import com.zavudev.api.services.async.senders.agent.tools.WebhookServiceAsyncImpl
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
 import kotlin.jvm.optionals.getOrNull
@@ -40,10 +44,14 @@ class ToolServiceAsyncImpl internal constructor(private val clientOptions: Clien
         WithRawResponseImpl(clientOptions)
     }
 
+    private val webhook: WebhookServiceAsync by lazy { WebhookServiceAsyncImpl(clientOptions) }
+
     override fun withRawResponse(): ToolServiceAsync.WithRawResponse = withRawResponse
 
     override fun withOptions(modifier: Consumer<ClientOptions.Builder>): ToolServiceAsync =
         ToolServiceAsyncImpl(clientOptions.toBuilder().apply(modifier::accept).build())
+
+    override fun webhook(): WebhookServiceAsync = webhook
 
     override fun create(
         params: ToolCreateParams,
@@ -80,6 +88,13 @@ class ToolServiceAsyncImpl internal constructor(private val clientOptions: Clien
         // delete /v1/senders/{senderId}/agent/tools/{toolId}
         withRawResponse().delete(params, requestOptions).thenAccept {}
 
+    override fun listTestRuns(
+        params: ToolListTestRunsParams,
+        requestOptions: RequestOptions,
+    ): CompletableFuture<ToolListTestRunsResponse> =
+        // get /v1/senders/{senderId}/agent/tools/{toolId}/test-runs
+        withRawResponse().listTestRuns(params, requestOptions).thenApply { it.parse() }
+
     override fun test(
         params: ToolTestParams,
         requestOptions: RequestOptions,
@@ -93,12 +108,18 @@ class ToolServiceAsyncImpl internal constructor(private val clientOptions: Clien
         private val errorHandler: Handler<HttpResponse> =
             errorHandler(errorBodyHandler(clientOptions.jsonMapper))
 
+        private val webhook: WebhookServiceAsync.WithRawResponse by lazy {
+            WebhookServiceAsyncImpl.WithRawResponseImpl(clientOptions)
+        }
+
         override fun withOptions(
             modifier: Consumer<ClientOptions.Builder>
         ): ToolServiceAsync.WithRawResponse =
             ToolServiceAsyncImpl.WithRawResponseImpl(
                 clientOptions.toBuilder().apply(modifier::accept).build()
             )
+
+        override fun webhook(): WebhookServiceAsync.WithRawResponse = webhook
 
         private val createHandler: Handler<ToolCreateResponse> =
             jsonHandler<ToolCreateResponse>(clientOptions.jsonMapper)
@@ -286,6 +307,47 @@ class ToolServiceAsyncImpl internal constructor(private val clientOptions: Clien
                 .thenApply { response ->
                     errorHandler.handle(response).parseable {
                         response.use { deleteHandler.handle(it) }
+                    }
+                }
+        }
+
+        private val listTestRunsHandler: Handler<ToolListTestRunsResponse> =
+            jsonHandler<ToolListTestRunsResponse>(clientOptions.jsonMapper)
+
+        override fun listTestRuns(
+            params: ToolListTestRunsParams,
+            requestOptions: RequestOptions,
+        ): CompletableFuture<HttpResponseFor<ToolListTestRunsResponse>> {
+            // We check here instead of in the params builder because this can be specified
+            // positionally or in the params class.
+            checkRequired("toolId", params.toolId().getOrNull())
+            val request =
+                HttpRequest.builder()
+                    .method(HttpMethod.GET)
+                    .baseUrl(clientOptions.baseUrl())
+                    .addPathSegments(
+                        "v1",
+                        "senders",
+                        params._pathParam(0),
+                        "agent",
+                        "tools",
+                        params._pathParam(1),
+                        "test-runs",
+                    )
+                    .build()
+                    .prepareAsync(clientOptions, params)
+            val requestOptions = requestOptions.applyDefaults(RequestOptions.from(clientOptions))
+            return request
+                .thenComposeAsync { clientOptions.httpClient.executeAsync(it, requestOptions) }
+                .thenApply { response ->
+                    errorHandler.handle(response).parseable {
+                        response
+                            .use { listTestRunsHandler.handle(it) }
+                            .also {
+                                if (requestOptions.responseValidation!!) {
+                                    it.validate()
+                                }
+                            }
                     }
                 }
         }

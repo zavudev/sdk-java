@@ -5,6 +5,8 @@ package com.zavudev.api.services.async
 import com.zavudev.api.core.ClientOptions
 import com.zavudev.api.core.RequestOptions
 import com.zavudev.api.core.http.HttpResponseFor
+import com.zavudev.api.models.urls.UrlEscalateParams
+import com.zavudev.api.models.urls.UrlEscalateResponse
 import com.zavudev.api.models.urls.UrlListVerifiedPageAsync
 import com.zavudev.api.models.urls.UrlListVerifiedParams
 import com.zavudev.api.models.urls.UrlRetrieveDetailsParams
@@ -27,6 +29,31 @@ interface UrlServiceAsync {
      * The original service is not modified.
      */
     fun withOptions(modifier: Consumer<ClientOptions.Builder>): UrlServiceAsync
+
+    /**
+     * Request manual review of a rejected URL. Only URLs in 'rejected' status can be escalated; the
+     * status then moves to 'escalated'.
+     */
+    fun escalate(urlId: String, params: UrlEscalateParams): CompletableFuture<UrlEscalateResponse> =
+        escalate(urlId, params, RequestOptions.none())
+
+    /** @see escalate */
+    fun escalate(
+        urlId: String,
+        params: UrlEscalateParams,
+        requestOptions: RequestOptions = RequestOptions.none(),
+    ): CompletableFuture<UrlEscalateResponse> =
+        escalate(params.toBuilder().urlId(urlId).build(), requestOptions)
+
+    /** @see escalate */
+    fun escalate(params: UrlEscalateParams): CompletableFuture<UrlEscalateResponse> =
+        escalate(params, RequestOptions.none())
+
+    /** @see escalate */
+    fun escalate(
+        params: UrlEscalateParams,
+        requestOptions: RequestOptions = RequestOptions.none(),
+    ): CompletableFuture<UrlEscalateResponse>
 
     /** List URLs that have been verified for this project. */
     fun listVerified(): CompletableFuture<UrlListVerifiedPageAsync> =
@@ -113,6 +140,36 @@ interface UrlServiceAsync {
          * The original service is not modified.
          */
         fun withOptions(modifier: Consumer<ClientOptions.Builder>): UrlServiceAsync.WithRawResponse
+
+        /**
+         * Returns a raw HTTP response for `post /v1/urls/{urlId}/escalate`, but is otherwise the
+         * same as [UrlServiceAsync.escalate].
+         */
+        fun escalate(
+            urlId: String,
+            params: UrlEscalateParams,
+        ): CompletableFuture<HttpResponseFor<UrlEscalateResponse>> =
+            escalate(urlId, params, RequestOptions.none())
+
+        /** @see escalate */
+        fun escalate(
+            urlId: String,
+            params: UrlEscalateParams,
+            requestOptions: RequestOptions = RequestOptions.none(),
+        ): CompletableFuture<HttpResponseFor<UrlEscalateResponse>> =
+            escalate(params.toBuilder().urlId(urlId).build(), requestOptions)
+
+        /** @see escalate */
+        fun escalate(
+            params: UrlEscalateParams
+        ): CompletableFuture<HttpResponseFor<UrlEscalateResponse>> =
+            escalate(params, RequestOptions.none())
+
+        /** @see escalate */
+        fun escalate(
+            params: UrlEscalateParams,
+            requestOptions: RequestOptions = RequestOptions.none(),
+        ): CompletableFuture<HttpResponseFor<UrlEscalateResponse>>
 
         /**
          * Returns a raw HTTP response for `get /v1/urls`, but is otherwise the same as

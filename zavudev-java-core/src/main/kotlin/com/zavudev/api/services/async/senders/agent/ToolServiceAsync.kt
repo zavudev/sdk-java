@@ -11,12 +11,15 @@ import com.zavudev.api.models.senders.agent.tools.ToolCreateResponse
 import com.zavudev.api.models.senders.agent.tools.ToolDeleteParams
 import com.zavudev.api.models.senders.agent.tools.ToolListPageAsync
 import com.zavudev.api.models.senders.agent.tools.ToolListParams
+import com.zavudev.api.models.senders.agent.tools.ToolListTestRunsParams
+import com.zavudev.api.models.senders.agent.tools.ToolListTestRunsResponse
 import com.zavudev.api.models.senders.agent.tools.ToolRetrieveParams
 import com.zavudev.api.models.senders.agent.tools.ToolRetrieveResponse
 import com.zavudev.api.models.senders.agent.tools.ToolTestParams
 import com.zavudev.api.models.senders.agent.tools.ToolTestResponse
 import com.zavudev.api.models.senders.agent.tools.ToolUpdateParams
 import com.zavudev.api.models.senders.agent.tools.ToolUpdateResponse
+import com.zavudev.api.services.async.senders.agent.tools.WebhookServiceAsync
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
 
@@ -33,6 +36,8 @@ interface ToolServiceAsync {
      * The original service is not modified.
      */
     fun withOptions(modifier: Consumer<ClientOptions.Builder>): ToolServiceAsync
+
+    fun webhook(): WebhookServiceAsync
 
     /** Create a new tool for an agent. Tools allow the agent to call external webhooks. */
     fun create(senderId: String, params: ToolCreateParams): CompletableFuture<ToolCreateResponse> =
@@ -158,6 +163,34 @@ interface ToolServiceAsync {
     ): CompletableFuture<Void?>
 
     /**
+     * Recent runs of this tool triggered from the test endpoint, newest first. Covers manual tests
+     * only: a tool called by an agent during a real conversation is not recorded here.
+     */
+    fun listTestRuns(
+        toolId: String,
+        params: ToolListTestRunsParams,
+    ): CompletableFuture<ToolListTestRunsResponse> =
+        listTestRuns(toolId, params, RequestOptions.none())
+
+    /** @see listTestRuns */
+    fun listTestRuns(
+        toolId: String,
+        params: ToolListTestRunsParams,
+        requestOptions: RequestOptions = RequestOptions.none(),
+    ): CompletableFuture<ToolListTestRunsResponse> =
+        listTestRuns(params.toBuilder().toolId(toolId).build(), requestOptions)
+
+    /** @see listTestRuns */
+    fun listTestRuns(params: ToolListTestRunsParams): CompletableFuture<ToolListTestRunsResponse> =
+        listTestRuns(params, RequestOptions.none())
+
+    /** @see listTestRuns */
+    fun listTestRuns(
+        params: ToolListTestRunsParams,
+        requestOptions: RequestOptions = RequestOptions.none(),
+    ): CompletableFuture<ToolListTestRunsResponse>
+
+    /**
      * Run a tool with the parameters you supply and return what it answered.
      *
      * The call is synchronous: the response carries the tool's status, body, and duration, so a
@@ -199,6 +232,8 @@ interface ToolServiceAsync {
          * The original service is not modified.
          */
         fun withOptions(modifier: Consumer<ClientOptions.Builder>): ToolServiceAsync.WithRawResponse
+
+        fun webhook(): WebhookServiceAsync.WithRawResponse
 
         /**
          * Returns a raw HTTP response for `post /v1/senders/{senderId}/agent/tools`, but is
@@ -353,6 +388,37 @@ interface ToolServiceAsync {
             params: ToolDeleteParams,
             requestOptions: RequestOptions = RequestOptions.none(),
         ): CompletableFuture<HttpResponse>
+
+        /**
+         * Returns a raw HTTP response for `get
+         * /v1/senders/{senderId}/agent/tools/{toolId}/test-runs`, but is otherwise the same as
+         * [ToolServiceAsync.listTestRuns].
+         */
+        fun listTestRuns(
+            toolId: String,
+            params: ToolListTestRunsParams,
+        ): CompletableFuture<HttpResponseFor<ToolListTestRunsResponse>> =
+            listTestRuns(toolId, params, RequestOptions.none())
+
+        /** @see listTestRuns */
+        fun listTestRuns(
+            toolId: String,
+            params: ToolListTestRunsParams,
+            requestOptions: RequestOptions = RequestOptions.none(),
+        ): CompletableFuture<HttpResponseFor<ToolListTestRunsResponse>> =
+            listTestRuns(params.toBuilder().toolId(toolId).build(), requestOptions)
+
+        /** @see listTestRuns */
+        fun listTestRuns(
+            params: ToolListTestRunsParams
+        ): CompletableFuture<HttpResponseFor<ToolListTestRunsResponse>> =
+            listTestRuns(params, RequestOptions.none())
+
+        /** @see listTestRuns */
+        fun listTestRuns(
+            params: ToolListTestRunsParams,
+            requestOptions: RequestOptions = RequestOptions.none(),
+        ): CompletableFuture<HttpResponseFor<ToolListTestRunsResponse>>
 
         /**
          * Returns a raw HTTP response for `post /v1/senders/{senderId}/agent/tools/{toolId}/test`,

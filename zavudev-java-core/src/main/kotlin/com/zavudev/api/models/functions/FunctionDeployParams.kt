@@ -44,7 +44,31 @@ private constructor(
     fun dependencies(): Optional<Dependencies> = body.dependencies()
 
     /**
-     * New source code to publish (replaces the draft).
+     * Which file in `files` is the entry point. Defaults to `index.ts`.
+     *
+     * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
+     *   server responded with an unexpected value).
+     */
+    fun entrypoint(): Optional<String> = body.entrypoint()
+
+    /**
+     * The project's source files, keyed by path relative to the project root (e.g. `index.ts`,
+     * `lib/orders.ts`). Imports between them are resolved when the function is built, so a function
+     * can be split across as many files as it needs.
+     *
+     * Paths must be relative and use forward slashes; `..`, `node_modules/` and `package.json` are
+     * rejected. npm packages are not uploaded here — declare them under `dependencies` and Zavu
+     * installs them. Limits: 200 files and 900,000 bytes for the whole tree.
+     *
+     * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
+     *   server responded with an unexpected value).
+     */
+    fun files(): Optional<Files> = body.files()
+
+    /**
+     * Shortcut for a single-file function: exactly equivalent to sending `files` with one entry
+     * named after `entrypoint` (`index.ts` by default). Fully supported — use whichever fits. If
+     * both are sent, `files` wins.
      *
      * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
      *   server responded with an unexpected value).
@@ -57,6 +81,20 @@ private constructor(
      * Unlike [dependencies], this method doesn't throw if the JSON field has an unexpected type.
      */
     fun _dependencies(): JsonField<Dependencies> = body._dependencies()
+
+    /**
+     * Returns the raw JSON value of [entrypoint].
+     *
+     * Unlike [entrypoint], this method doesn't throw if the JSON field has an unexpected type.
+     */
+    fun _entrypoint(): JsonField<String> = body._entrypoint()
+
+    /**
+     * Returns the raw JSON value of [files].
+     *
+     * Unlike [files], this method doesn't throw if the JSON field has an unexpected type.
+     */
+    fun _files(): JsonField<Files> = body._files()
 
     /**
      * Returns the raw JSON value of [sourceCode].
@@ -110,6 +148,8 @@ private constructor(
          * This is generally only useful if you are already constructing the body separately.
          * Otherwise, it's more convenient to use the top-level setters instead:
          * - [dependencies]
+         * - [entrypoint]
+         * - [files]
          * - [sourceCode]
          */
         fun body(body: Body) = apply { this.body = body.toBuilder() }
@@ -128,7 +168,42 @@ private constructor(
             body.dependencies(dependencies)
         }
 
-        /** New source code to publish (replaces the draft). */
+        /** Which file in `files` is the entry point. Defaults to `index.ts`. */
+        fun entrypoint(entrypoint: String) = apply { body.entrypoint(entrypoint) }
+
+        /**
+         * Sets [Builder.entrypoint] to an arbitrary JSON value.
+         *
+         * You should usually call [Builder.entrypoint] with a well-typed [String] value instead.
+         * This method is primarily for setting the field to an undocumented or not yet supported
+         * value.
+         */
+        fun entrypoint(entrypoint: JsonField<String>) = apply { body.entrypoint(entrypoint) }
+
+        /**
+         * The project's source files, keyed by path relative to the project root (e.g. `index.ts`,
+         * `lib/orders.ts`). Imports between them are resolved when the function is built, so a
+         * function can be split across as many files as it needs.
+         *
+         * Paths must be relative and use forward slashes; `..`, `node_modules/` and `package.json`
+         * are rejected. npm packages are not uploaded here — declare them under `dependencies` and
+         * Zavu installs them. Limits: 200 files and 900,000 bytes for the whole tree.
+         */
+        fun files(files: Files) = apply { body.files(files) }
+
+        /**
+         * Sets [Builder.files] to an arbitrary JSON value.
+         *
+         * You should usually call [Builder.files] with a well-typed [Files] value instead. This
+         * method is primarily for setting the field to an undocumented or not yet supported value.
+         */
+        fun files(files: JsonField<Files>) = apply { body.files(files) }
+
+        /**
+         * Shortcut for a single-file function: exactly equivalent to sending `files` with one entry
+         * named after `entrypoint` (`index.ts` by default). Fully supported — use whichever fits.
+         * If both are sent, `files` wins.
+         */
         fun sourceCode(sourceCode: String) = apply { body.sourceCode(sourceCode) }
 
         /**
@@ -284,13 +359,15 @@ private constructor(
     override fun _queryParams(): QueryParams = additionalQueryParams
 
     /**
-     * Optional source/dependencies update applied before deploying. Omit both fields to redeploy
+     * Optional source/dependencies update applied before deploying. Omit every field to redeploy
      * the current draft as-is.
      */
     class Body
     @JsonCreator(mode = JsonCreator.Mode.DISABLED)
     private constructor(
         private val dependencies: JsonField<Dependencies>,
+        private val entrypoint: JsonField<String>,
+        private val files: JsonField<Files>,
         private val sourceCode: JsonField<String>,
         private val additionalProperties: MutableMap<String, JsonValue>,
     ) {
@@ -300,10 +377,14 @@ private constructor(
             @JsonProperty("dependencies")
             @ExcludeMissing
             dependencies: JsonField<Dependencies> = JsonMissing.of(),
+            @JsonProperty("entrypoint")
+            @ExcludeMissing
+            entrypoint: JsonField<String> = JsonMissing.of(),
+            @JsonProperty("files") @ExcludeMissing files: JsonField<Files> = JsonMissing.of(),
             @JsonProperty("sourceCode")
             @ExcludeMissing
             sourceCode: JsonField<String> = JsonMissing.of(),
-        ) : this(dependencies, sourceCode, mutableMapOf())
+        ) : this(dependencies, entrypoint, files, sourceCode, mutableMapOf())
 
         /**
          * New dependency map (replaces existing dependencies).
@@ -314,7 +395,31 @@ private constructor(
         fun dependencies(): Optional<Dependencies> = dependencies.getOptional("dependencies")
 
         /**
-         * New source code to publish (replaces the draft).
+         * Which file in `files` is the entry point. Defaults to `index.ts`.
+         *
+         * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
+         *   server responded with an unexpected value).
+         */
+        fun entrypoint(): Optional<String> = entrypoint.getOptional("entrypoint")
+
+        /**
+         * The project's source files, keyed by path relative to the project root (e.g. `index.ts`,
+         * `lib/orders.ts`). Imports between them are resolved when the function is built, so a
+         * function can be split across as many files as it needs.
+         *
+         * Paths must be relative and use forward slashes; `..`, `node_modules/` and `package.json`
+         * are rejected. npm packages are not uploaded here — declare them under `dependencies` and
+         * Zavu installs them. Limits: 200 files and 900,000 bytes for the whole tree.
+         *
+         * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
+         *   server responded with an unexpected value).
+         */
+        fun files(): Optional<Files> = files.getOptional("files")
+
+        /**
+         * Shortcut for a single-file function: exactly equivalent to sending `files` with one entry
+         * named after `entrypoint` (`index.ts` by default). Fully supported — use whichever fits.
+         * If both are sent, `files` wins.
          *
          * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
          *   server responded with an unexpected value).
@@ -330,6 +435,22 @@ private constructor(
         @JsonProperty("dependencies")
         @ExcludeMissing
         fun _dependencies(): JsonField<Dependencies> = dependencies
+
+        /**
+         * Returns the raw JSON value of [entrypoint].
+         *
+         * Unlike [entrypoint], this method doesn't throw if the JSON field has an unexpected type.
+         */
+        @JsonProperty("entrypoint")
+        @ExcludeMissing
+        fun _entrypoint(): JsonField<String> = entrypoint
+
+        /**
+         * Returns the raw JSON value of [files].
+         *
+         * Unlike [files], this method doesn't throw if the JSON field has an unexpected type.
+         */
+        @JsonProperty("files") @ExcludeMissing fun _files(): JsonField<Files> = files
 
         /**
          * Returns the raw JSON value of [sourceCode].
@@ -362,12 +483,16 @@ private constructor(
         class Builder internal constructor() {
 
             private var dependencies: JsonField<Dependencies> = JsonMissing.of()
+            private var entrypoint: JsonField<String> = JsonMissing.of()
+            private var files: JsonField<Files> = JsonMissing.of()
             private var sourceCode: JsonField<String> = JsonMissing.of()
             private var additionalProperties: MutableMap<String, JsonValue> = mutableMapOf()
 
             @JvmSynthetic
             internal fun from(body: Body) = apply {
                 dependencies = body.dependencies
+                entrypoint = body.entrypoint
+                files = body.files
                 sourceCode = body.sourceCode
                 additionalProperties = body.additionalProperties.toMutableMap()
             }
@@ -386,7 +511,44 @@ private constructor(
                 this.dependencies = dependencies
             }
 
-            /** New source code to publish (replaces the draft). */
+            /** Which file in `files` is the entry point. Defaults to `index.ts`. */
+            fun entrypoint(entrypoint: String) = entrypoint(JsonField.of(entrypoint))
+
+            /**
+             * Sets [Builder.entrypoint] to an arbitrary JSON value.
+             *
+             * You should usually call [Builder.entrypoint] with a well-typed [String] value
+             * instead. This method is primarily for setting the field to an undocumented or not yet
+             * supported value.
+             */
+            fun entrypoint(entrypoint: JsonField<String>) = apply { this.entrypoint = entrypoint }
+
+            /**
+             * The project's source files, keyed by path relative to the project root (e.g.
+             * `index.ts`, `lib/orders.ts`). Imports between them are resolved when the function is
+             * built, so a function can be split across as many files as it needs.
+             *
+             * Paths must be relative and use forward slashes; `..`, `node_modules/` and
+             * `package.json` are rejected. npm packages are not uploaded here — declare them under
+             * `dependencies` and Zavu installs them. Limits: 200 files and 900,000 bytes for the
+             * whole tree.
+             */
+            fun files(files: Files) = files(JsonField.of(files))
+
+            /**
+             * Sets [Builder.files] to an arbitrary JSON value.
+             *
+             * You should usually call [Builder.files] with a well-typed [Files] value instead. This
+             * method is primarily for setting the field to an undocumented or not yet supported
+             * value.
+             */
+            fun files(files: JsonField<Files>) = apply { this.files = files }
+
+            /**
+             * Shortcut for a single-file function: exactly equivalent to sending `files` with one
+             * entry named after `entrypoint` (`index.ts` by default). Fully supported — use
+             * whichever fits. If both are sent, `files` wins.
+             */
             fun sourceCode(sourceCode: String) = sourceCode(JsonField.of(sourceCode))
 
             /**
@@ -422,7 +584,14 @@ private constructor(
              *
              * Further updates to this [Builder] will not mutate the returned instance.
              */
-            fun build(): Body = Body(dependencies, sourceCode, additionalProperties.toMutableMap())
+            fun build(): Body =
+                Body(
+                    dependencies,
+                    entrypoint,
+                    files,
+                    sourceCode,
+                    additionalProperties.toMutableMap(),
+                )
         }
 
         private var validated: Boolean = false
@@ -442,6 +611,8 @@ private constructor(
             }
 
             dependencies().ifPresent { it.validate() }
+            entrypoint()
+            files().ifPresent { it.validate() }
             sourceCode()
             validated = true
         }
@@ -463,6 +634,8 @@ private constructor(
         @JvmSynthetic
         internal fun validity(): Int =
             (dependencies.asKnown().getOrNull()?.validity() ?: 0) +
+                (if (entrypoint.asKnown().isPresent) 1 else 0) +
+                (files.asKnown().getOrNull()?.validity() ?: 0) +
                 (if (sourceCode.asKnown().isPresent) 1 else 0)
 
         override fun equals(other: Any?): Boolean {
@@ -472,18 +645,20 @@ private constructor(
 
             return other is Body &&
                 dependencies == other.dependencies &&
+                entrypoint == other.entrypoint &&
+                files == other.files &&
                 sourceCode == other.sourceCode &&
                 additionalProperties == other.additionalProperties
         }
 
         private val hashCode: Int by lazy {
-            Objects.hash(dependencies, sourceCode, additionalProperties)
+            Objects.hash(dependencies, entrypoint, files, sourceCode, additionalProperties)
         }
 
         override fun hashCode(): Int = hashCode
 
         override fun toString() =
-            "Body{dependencies=$dependencies, sourceCode=$sourceCode, additionalProperties=$additionalProperties}"
+            "Body{dependencies=$dependencies, entrypoint=$entrypoint, files=$files, sourceCode=$sourceCode, additionalProperties=$additionalProperties}"
     }
 
     /** New dependency map (replaces existing dependencies). */
@@ -593,6 +768,123 @@ private constructor(
         override fun hashCode(): Int = hashCode
 
         override fun toString() = "Dependencies{additionalProperties=$additionalProperties}"
+    }
+
+    /**
+     * The project's source files, keyed by path relative to the project root (e.g. `index.ts`,
+     * `lib/orders.ts`). Imports between them are resolved when the function is built, so a function
+     * can be split across as many files as it needs.
+     *
+     * Paths must be relative and use forward slashes; `..`, `node_modules/` and `package.json` are
+     * rejected. npm packages are not uploaded here — declare them under `dependencies` and Zavu
+     * installs them. Limits: 200 files and 900,000 bytes for the whole tree.
+     */
+    class Files
+    @JsonCreator
+    private constructor(
+        @com.fasterxml.jackson.annotation.JsonValue
+        private val additionalProperties: Map<String, JsonValue>
+    ) {
+
+        @JsonAnyGetter
+        @ExcludeMissing
+        fun _additionalProperties(): Map<String, JsonValue> = additionalProperties
+
+        fun toBuilder() = Builder().from(this)
+
+        companion object {
+
+            /** Returns a mutable builder for constructing an instance of [Files]. */
+            @JvmStatic fun builder() = Builder()
+        }
+
+        /** A builder for [Files]. */
+        class Builder internal constructor() {
+
+            private var additionalProperties: MutableMap<String, JsonValue> = mutableMapOf()
+
+            @JvmSynthetic
+            internal fun from(files: Files) = apply {
+                additionalProperties = files.additionalProperties.toMutableMap()
+            }
+
+            fun additionalProperties(additionalProperties: Map<String, JsonValue>) = apply {
+                this.additionalProperties.clear()
+                putAllAdditionalProperties(additionalProperties)
+            }
+
+            fun putAdditionalProperty(key: String, value: JsonValue) = apply {
+                additionalProperties.put(key, value)
+            }
+
+            fun putAllAdditionalProperties(additionalProperties: Map<String, JsonValue>) = apply {
+                this.additionalProperties.putAll(additionalProperties)
+            }
+
+            fun removeAdditionalProperty(key: String) = apply { additionalProperties.remove(key) }
+
+            fun removeAllAdditionalProperties(keys: Set<String>) = apply {
+                keys.forEach(::removeAdditionalProperty)
+            }
+
+            /**
+             * Returns an immutable instance of [Files].
+             *
+             * Further updates to this [Builder] will not mutate the returned instance.
+             */
+            fun build(): Files = Files(additionalProperties.toImmutable())
+        }
+
+        private var validated: Boolean = false
+
+        /**
+         * Validates that the types of all values in this object match their expected types
+         * recursively.
+         *
+         * This method is _not_ forwards compatible with new types from the API for existing fields.
+         *
+         * @throws ZavudevInvalidDataException if any value type in this object doesn't match its
+         *   expected type.
+         */
+        fun validate(): Files = apply {
+            if (validated) {
+                return@apply
+            }
+
+            validated = true
+        }
+
+        fun isValid(): Boolean =
+            try {
+                validate()
+                true
+            } catch (e: ZavudevInvalidDataException) {
+                false
+            }
+
+        /**
+         * Returns a score indicating how many valid values are contained in this object
+         * recursively.
+         *
+         * Used for best match union deserialization.
+         */
+        @JvmSynthetic
+        internal fun validity(): Int =
+            additionalProperties.count { (_, value) -> !value.isNull() && !value.isMissing() }
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) {
+                return true
+            }
+
+            return other is Files && additionalProperties == other.additionalProperties
+        }
+
+        private val hashCode: Int by lazy { Objects.hash(additionalProperties) }
+
+        override fun hashCode(): Int = hashCode
+
+        override fun toString() = "Files{additionalProperties=$additionalProperties}"
     }
 
     override fun equals(other: Any?): Boolean {

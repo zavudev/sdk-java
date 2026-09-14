@@ -64,6 +64,7 @@ internal class ContactServiceTest {
                 ContactUpdateParams.builder()
                     .contactId("contactId")
                     .defaultChannel(ContactUpdateParams.DefaultChannel.SMS)
+                    .displayName("John Doe")
                     .metadata(
                         ContactUpdateParams.Metadata.builder()
                             .putAdditionalProperty("foo", JsonValue.from("string"))
@@ -93,15 +94,6 @@ internal class ContactServiceTest {
         val contactService = client.contacts()
 
         contactService.delete("contactId")
-    }
-
-    @Disabled("Mock server tests are disabled")
-    @Test
-    fun dismissMergeSuggestion() {
-        val client = ZavudevOkHttpClient.builder().apiKey("My API Key").build()
-        val contactService = client.contacts()
-
-        contactService.dismissMergeSuggestion("contactId")
     }
 
     @Disabled("Mock server tests are disabled")

@@ -10,7 +10,6 @@ import com.zavudev.api.core.http.HttpResponseFor
 import com.zavudev.api.models.contacts.Contact
 import com.zavudev.api.models.contacts.ContactCreateParams
 import com.zavudev.api.models.contacts.ContactDeleteParams
-import com.zavudev.api.models.contacts.ContactDismissMergeSuggestionParams
 import com.zavudev.api.models.contacts.ContactListPage
 import com.zavudev.api.models.contacts.ContactListParams
 import com.zavudev.api.models.contacts.ContactMergeParams
@@ -149,41 +148,6 @@ interface ContactService {
     /** @see delete */
     fun delete(contactId: String, requestOptions: RequestOptions) =
         delete(contactId, ContactDeleteParams.none(), requestOptions)
-
-    /** Dismiss the merge suggestion for a contact. */
-    fun dismissMergeSuggestion(contactId: String) =
-        dismissMergeSuggestion(contactId, ContactDismissMergeSuggestionParams.none())
-
-    /** @see dismissMergeSuggestion */
-    fun dismissMergeSuggestion(
-        contactId: String,
-        params: ContactDismissMergeSuggestionParams = ContactDismissMergeSuggestionParams.none(),
-        requestOptions: RequestOptions = RequestOptions.none(),
-    ) = dismissMergeSuggestion(params.toBuilder().contactId(contactId).build(), requestOptions)
-
-    /** @see dismissMergeSuggestion */
-    fun dismissMergeSuggestion(
-        contactId: String,
-        params: ContactDismissMergeSuggestionParams = ContactDismissMergeSuggestionParams.none(),
-    ) = dismissMergeSuggestion(contactId, params, RequestOptions.none())
-
-    /** @see dismissMergeSuggestion */
-    fun dismissMergeSuggestion(
-        params: ContactDismissMergeSuggestionParams,
-        requestOptions: RequestOptions = RequestOptions.none(),
-    )
-
-    /** @see dismissMergeSuggestion */
-    fun dismissMergeSuggestion(params: ContactDismissMergeSuggestionParams) =
-        dismissMergeSuggestion(params, RequestOptions.none())
-
-    /** @see dismissMergeSuggestion */
-    fun dismissMergeSuggestion(contactId: String, requestOptions: RequestOptions) =
-        dismissMergeSuggestion(
-            contactId,
-            ContactDismissMergeSuggestionParams.none(),
-            requestOptions,
-        )
 
     /**
      * Merge a source contact into this contact. All channels from the source contact will be moved
@@ -411,55 +375,6 @@ interface ContactService {
         @MustBeClosed
         fun delete(contactId: String, requestOptions: RequestOptions): HttpResponse =
             delete(contactId, ContactDeleteParams.none(), requestOptions)
-
-        /**
-         * Returns a raw HTTP response for `delete /v1/contacts/{contactId}/merge-suggestion`, but
-         * is otherwise the same as [ContactService.dismissMergeSuggestion].
-         */
-        @MustBeClosed
-        fun dismissMergeSuggestion(contactId: String): HttpResponse =
-            dismissMergeSuggestion(contactId, ContactDismissMergeSuggestionParams.none())
-
-        /** @see dismissMergeSuggestion */
-        @MustBeClosed
-        fun dismissMergeSuggestion(
-            contactId: String,
-            params: ContactDismissMergeSuggestionParams =
-                ContactDismissMergeSuggestionParams.none(),
-            requestOptions: RequestOptions = RequestOptions.none(),
-        ): HttpResponse =
-            dismissMergeSuggestion(params.toBuilder().contactId(contactId).build(), requestOptions)
-
-        /** @see dismissMergeSuggestion */
-        @MustBeClosed
-        fun dismissMergeSuggestion(
-            contactId: String,
-            params: ContactDismissMergeSuggestionParams = ContactDismissMergeSuggestionParams.none(),
-        ): HttpResponse = dismissMergeSuggestion(contactId, params, RequestOptions.none())
-
-        /** @see dismissMergeSuggestion */
-        @MustBeClosed
-        fun dismissMergeSuggestion(
-            params: ContactDismissMergeSuggestionParams,
-            requestOptions: RequestOptions = RequestOptions.none(),
-        ): HttpResponse
-
-        /** @see dismissMergeSuggestion */
-        @MustBeClosed
-        fun dismissMergeSuggestion(params: ContactDismissMergeSuggestionParams): HttpResponse =
-            dismissMergeSuggestion(params, RequestOptions.none())
-
-        /** @see dismissMergeSuggestion */
-        @MustBeClosed
-        fun dismissMergeSuggestion(
-            contactId: String,
-            requestOptions: RequestOptions,
-        ): HttpResponse =
-            dismissMergeSuggestion(
-                contactId,
-                ContactDismissMergeSuggestionParams.none(),
-                requestOptions,
-            )
 
         /**
          * Returns a raw HTTP response for `post /v1/contacts/{contactId}/merge`, but is otherwise

@@ -23,6 +23,10 @@ import com.zavudev.api.models.senders.agent.knowledgebases.documents.DocumentDel
 import com.zavudev.api.models.senders.agent.knowledgebases.documents.DocumentListPage
 import com.zavudev.api.models.senders.agent.knowledgebases.documents.DocumentListPageResponse
 import com.zavudev.api.models.senders.agent.knowledgebases.documents.DocumentListParams
+import com.zavudev.api.models.senders.agent.knowledgebases.documents.DocumentRetrieveDocumentParams
+import com.zavudev.api.models.senders.agent.knowledgebases.documents.DocumentRetrieveDocumentResponse
+import com.zavudev.api.models.senders.agent.knowledgebases.documents.DocumentUpdateDocumentParams
+import com.zavudev.api.models.senders.agent.knowledgebases.documents.DocumentUpdateDocumentResponse
 import java.util.function.Consumer
 import kotlin.jvm.optionals.getOrNull
 
@@ -56,6 +60,20 @@ class DocumentServiceImpl internal constructor(private val clientOptions: Client
         // delete /v1/senders/{senderId}/agent/knowledge-bases/{kbId}/documents/{docId}
         withRawResponse().delete(params, requestOptions)
     }
+
+    override fun retrieveDocument(
+        params: DocumentRetrieveDocumentParams,
+        requestOptions: RequestOptions,
+    ): DocumentRetrieveDocumentResponse =
+        // get /v1/senders/{senderId}/agent/knowledge-bases/{kbId}/documents/{docId}
+        withRawResponse().retrieveDocument(params, requestOptions).parse()
+
+    override fun updateDocument(
+        params: DocumentUpdateDocumentParams,
+        requestOptions: RequestOptions,
+    ): DocumentUpdateDocumentResponse =
+        // patch /v1/senders/{senderId}/agent/knowledge-bases/{kbId}/documents/{docId}
+        withRawResponse().updateDocument(params, requestOptions).parse()
 
     class WithRawResponseImpl internal constructor(private val clientOptions: ClientOptions) :
         DocumentService.WithRawResponse {
@@ -184,6 +202,85 @@ class DocumentServiceImpl internal constructor(private val clientOptions: Client
             val response = clientOptions.httpClient.execute(request, requestOptions)
             return errorHandler.handle(response).parseable {
                 response.use { deleteHandler.handle(it) }
+            }
+        }
+
+        private val retrieveDocumentHandler: Handler<DocumentRetrieveDocumentResponse> =
+            jsonHandler<DocumentRetrieveDocumentResponse>(clientOptions.jsonMapper)
+
+        override fun retrieveDocument(
+            params: DocumentRetrieveDocumentParams,
+            requestOptions: RequestOptions,
+        ): HttpResponseFor<DocumentRetrieveDocumentResponse> {
+            // We check here instead of in the params builder because this can be specified
+            // positionally or in the params class.
+            checkRequired("docId", params.docId().getOrNull())
+            val request =
+                HttpRequest.builder()
+                    .method(HttpMethod.GET)
+                    .baseUrl(clientOptions.baseUrl())
+                    .addPathSegments(
+                        "v1",
+                        "senders",
+                        params._pathParam(0),
+                        "agent",
+                        "knowledge-bases",
+                        params._pathParam(1),
+                        "documents",
+                        params._pathParam(2),
+                    )
+                    .build()
+                    .prepare(clientOptions, params)
+            val requestOptions = requestOptions.applyDefaults(RequestOptions.from(clientOptions))
+            val response = clientOptions.httpClient.execute(request, requestOptions)
+            return errorHandler.handle(response).parseable {
+                response
+                    .use { retrieveDocumentHandler.handle(it) }
+                    .also {
+                        if (requestOptions.responseValidation!!) {
+                            it.validate()
+                        }
+                    }
+            }
+        }
+
+        private val updateDocumentHandler: Handler<DocumentUpdateDocumentResponse> =
+            jsonHandler<DocumentUpdateDocumentResponse>(clientOptions.jsonMapper)
+
+        override fun updateDocument(
+            params: DocumentUpdateDocumentParams,
+            requestOptions: RequestOptions,
+        ): HttpResponseFor<DocumentUpdateDocumentResponse> {
+            // We check here instead of in the params builder because this can be specified
+            // positionally or in the params class.
+            checkRequired("docId", params.docId().getOrNull())
+            val request =
+                HttpRequest.builder()
+                    .method(HttpMethod.PATCH)
+                    .baseUrl(clientOptions.baseUrl())
+                    .addPathSegments(
+                        "v1",
+                        "senders",
+                        params._pathParam(0),
+                        "agent",
+                        "knowledge-bases",
+                        params._pathParam(1),
+                        "documents",
+                        params._pathParam(2),
+                    )
+                    .body(json(clientOptions.jsonMapper, params._body()))
+                    .build()
+                    .prepare(clientOptions, params)
+            val requestOptions = requestOptions.applyDefaults(RequestOptions.from(clientOptions))
+            val response = clientOptions.httpClient.execute(request, requestOptions)
+            return errorHandler.handle(response).parseable {
+                response
+                    .use { updateDocumentHandler.handle(it) }
+                    .also {
+                        if (requestOptions.responseValidation!!) {
+                            it.validate()
+                        }
+                    }
             }
         }
     }

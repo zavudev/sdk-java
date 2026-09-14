@@ -9,7 +9,6 @@ import com.zavudev.api.core.http.HttpResponseFor
 import com.zavudev.api.models.contacts.Contact
 import com.zavudev.api.models.contacts.ContactCreateParams
 import com.zavudev.api.models.contacts.ContactDeleteParams
-import com.zavudev.api.models.contacts.ContactDismissMergeSuggestionParams
 import com.zavudev.api.models.contacts.ContactListPageAsync
 import com.zavudev.api.models.contacts.ContactListParams
 import com.zavudev.api.models.contacts.ContactMergeParams
@@ -165,46 +164,6 @@ interface ContactServiceAsync {
     /** @see delete */
     fun delete(contactId: String, requestOptions: RequestOptions): CompletableFuture<Void?> =
         delete(contactId, ContactDeleteParams.none(), requestOptions)
-
-    /** Dismiss the merge suggestion for a contact. */
-    fun dismissMergeSuggestion(contactId: String): CompletableFuture<Void?> =
-        dismissMergeSuggestion(contactId, ContactDismissMergeSuggestionParams.none())
-
-    /** @see dismissMergeSuggestion */
-    fun dismissMergeSuggestion(
-        contactId: String,
-        params: ContactDismissMergeSuggestionParams = ContactDismissMergeSuggestionParams.none(),
-        requestOptions: RequestOptions = RequestOptions.none(),
-    ): CompletableFuture<Void?> =
-        dismissMergeSuggestion(params.toBuilder().contactId(contactId).build(), requestOptions)
-
-    /** @see dismissMergeSuggestion */
-    fun dismissMergeSuggestion(
-        contactId: String,
-        params: ContactDismissMergeSuggestionParams = ContactDismissMergeSuggestionParams.none(),
-    ): CompletableFuture<Void?> = dismissMergeSuggestion(contactId, params, RequestOptions.none())
-
-    /** @see dismissMergeSuggestion */
-    fun dismissMergeSuggestion(
-        params: ContactDismissMergeSuggestionParams,
-        requestOptions: RequestOptions = RequestOptions.none(),
-    ): CompletableFuture<Void?>
-
-    /** @see dismissMergeSuggestion */
-    fun dismissMergeSuggestion(
-        params: ContactDismissMergeSuggestionParams
-    ): CompletableFuture<Void?> = dismissMergeSuggestion(params, RequestOptions.none())
-
-    /** @see dismissMergeSuggestion */
-    fun dismissMergeSuggestion(
-        contactId: String,
-        requestOptions: RequestOptions,
-    ): CompletableFuture<Void?> =
-        dismissMergeSuggestion(
-            contactId,
-            ContactDismissMergeSuggestionParams.none(),
-            requestOptions,
-        )
 
     /**
      * Merge a source contact into this contact. All channels from the source contact will be moved
@@ -435,51 +394,6 @@ interface ContactServiceAsync {
             requestOptions: RequestOptions,
         ): CompletableFuture<HttpResponse> =
             delete(contactId, ContactDeleteParams.none(), requestOptions)
-
-        /**
-         * Returns a raw HTTP response for `delete /v1/contacts/{contactId}/merge-suggestion`, but
-         * is otherwise the same as [ContactServiceAsync.dismissMergeSuggestion].
-         */
-        fun dismissMergeSuggestion(contactId: String): CompletableFuture<HttpResponse> =
-            dismissMergeSuggestion(contactId, ContactDismissMergeSuggestionParams.none())
-
-        /** @see dismissMergeSuggestion */
-        fun dismissMergeSuggestion(
-            contactId: String,
-            params: ContactDismissMergeSuggestionParams =
-                ContactDismissMergeSuggestionParams.none(),
-            requestOptions: RequestOptions = RequestOptions.none(),
-        ): CompletableFuture<HttpResponse> =
-            dismissMergeSuggestion(params.toBuilder().contactId(contactId).build(), requestOptions)
-
-        /** @see dismissMergeSuggestion */
-        fun dismissMergeSuggestion(
-            contactId: String,
-            params: ContactDismissMergeSuggestionParams = ContactDismissMergeSuggestionParams.none(),
-        ): CompletableFuture<HttpResponse> =
-            dismissMergeSuggestion(contactId, params, RequestOptions.none())
-
-        /** @see dismissMergeSuggestion */
-        fun dismissMergeSuggestion(
-            params: ContactDismissMergeSuggestionParams,
-            requestOptions: RequestOptions = RequestOptions.none(),
-        ): CompletableFuture<HttpResponse>
-
-        /** @see dismissMergeSuggestion */
-        fun dismissMergeSuggestion(
-            params: ContactDismissMergeSuggestionParams
-        ): CompletableFuture<HttpResponse> = dismissMergeSuggestion(params, RequestOptions.none())
-
-        /** @see dismissMergeSuggestion */
-        fun dismissMergeSuggestion(
-            contactId: String,
-            requestOptions: RequestOptions,
-        ): CompletableFuture<HttpResponse> =
-            dismissMergeSuggestion(
-                contactId,
-                ContactDismissMergeSuggestionParams.none(),
-                requestOptions,
-            )
 
         /**
          * Returns a raw HTTP response for `post /v1/contacts/{contactId}/merge`, but is otherwise

@@ -6,6 +6,8 @@ import com.zavudev.api.client.okhttp.ZavudevOkHttpClientAsync
 import com.zavudev.api.models.senders.agent.knowledgebases.documents.DocumentCreateParams
 import com.zavudev.api.models.senders.agent.knowledgebases.documents.DocumentDeleteParams
 import com.zavudev.api.models.senders.agent.knowledgebases.documents.DocumentListParams
+import com.zavudev.api.models.senders.agent.knowledgebases.documents.DocumentRetrieveDocumentParams
+import com.zavudev.api.models.senders.agent.knowledgebases.documents.DocumentUpdateDocumentParams
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
@@ -62,5 +64,45 @@ internal class DocumentServiceAsyncTest {
             )
 
         val response = future.get()
+    }
+
+    @Disabled("Mock server tests are disabled")
+    @Test
+    fun retrieveDocument() {
+        val client = ZavudevOkHttpClientAsync.builder().apiKey("My API Key").build()
+        val documentServiceAsync = client.senders().agent().knowledgeBases().documents()
+
+        val responseFuture =
+            documentServiceAsync.retrieveDocument(
+                DocumentRetrieveDocumentParams.builder()
+                    .senderId("senderId")
+                    .kbId("kbId")
+                    .docId("docId")
+                    .build()
+            )
+
+        val response = responseFuture.get()
+        response.validate()
+    }
+
+    @Disabled("Mock server tests are disabled")
+    @Test
+    fun updateDocument() {
+        val client = ZavudevOkHttpClientAsync.builder().apiKey("My API Key").build()
+        val documentServiceAsync = client.senders().agent().knowledgeBases().documents()
+
+        val responseFuture =
+            documentServiceAsync.updateDocument(
+                DocumentUpdateDocumentParams.builder()
+                    .senderId("senderId")
+                    .kbId("kbId")
+                    .docId("docId")
+                    .content("content")
+                    .title("title")
+                    .build()
+            )
+
+        val response = responseFuture.get()
+        response.validate()
     }
 }

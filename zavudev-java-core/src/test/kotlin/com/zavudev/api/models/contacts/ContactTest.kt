@@ -60,7 +60,6 @@ internal class ContactTest {
                 .primaryEmail("john@example.com")
                 .primaryPhone("+56912345678")
                 .profileName("John Doe")
-                .suggestedMergeWith("suggestedMergeWith")
                 .updatedAt(OffsetDateTime.parse("2019-12-27T18:11:19.117Z"))
                 .build()
 
@@ -110,7 +109,6 @@ internal class ContactTest {
         assertThat(contact.primaryEmail()).contains("john@example.com")
         assertThat(contact.primaryPhone()).contains("+56912345678")
         assertThat(contact.profileName()).contains("John Doe")
-        assertThat(contact.suggestedMergeWith()).contains("suggestedMergeWith")
         assertThat(contact.updatedAt()).contains(OffsetDateTime.parse("2019-12-27T18:11:19.117Z"))
     }
 
@@ -163,7 +161,6 @@ internal class ContactTest {
                 .primaryEmail("john@example.com")
                 .primaryPhone("+56912345678")
                 .profileName("John Doe")
-                .suggestedMergeWith("suggestedMergeWith")
                 .updatedAt(OffsetDateTime.parse("2019-12-27T18:11:19.117Z"))
                 .build()
 

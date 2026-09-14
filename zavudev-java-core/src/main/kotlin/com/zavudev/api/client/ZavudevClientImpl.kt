@@ -6,12 +6,22 @@ import com.zavudev.api.core.ClientOptions
 import com.zavudev.api.core.getPackageVersion
 import com.zavudev.api.services.blocking.AddressService
 import com.zavudev.api.services.blocking.AddressServiceImpl
+import com.zavudev.api.services.blocking.AgentService
+import com.zavudev.api.services.blocking.AgentServiceImpl
+import com.zavudev.api.services.blocking.AgentTemplateService
+import com.zavudev.api.services.blocking.AgentTemplateServiceImpl
 import com.zavudev.api.services.blocking.BalanceService
 import com.zavudev.api.services.blocking.BalanceServiceImpl
 import com.zavudev.api.services.blocking.BroadcastService
 import com.zavudev.api.services.blocking.BroadcastServiceImpl
+import com.zavudev.api.services.blocking.CallService
+import com.zavudev.api.services.blocking.CallServiceImpl
 import com.zavudev.api.services.blocking.ContactService
 import com.zavudev.api.services.blocking.ContactServiceImpl
+import com.zavudev.api.services.blocking.ConversationService
+import com.zavudev.api.services.blocking.ConversationServiceImpl
+import com.zavudev.api.services.blocking.EmailDomainService
+import com.zavudev.api.services.blocking.EmailDomainServiceImpl
 import com.zavudev.api.services.blocking.FunctionService
 import com.zavudev.api.services.blocking.FunctionServiceImpl
 import com.zavudev.api.services.blocking.IntrospectService
@@ -105,6 +115,22 @@ class ZavudevClientImpl(private val clientOptions: ClientOptions) : ZavudevClien
         FunctionServiceImpl(clientOptionsWithUserAgent)
     }
 
+    private val conversations: ConversationService by lazy {
+        ConversationServiceImpl(clientOptionsWithUserAgent)
+    }
+
+    private val calls: CallService by lazy { CallServiceImpl(clientOptionsWithUserAgent) }
+
+    private val agentTemplates: AgentTemplateService by lazy {
+        AgentTemplateServiceImpl(clientOptionsWithUserAgent)
+    }
+
+    private val emailDomains: EmailDomainService by lazy {
+        EmailDomainServiceImpl(clientOptionsWithUserAgent)
+    }
+
+    private val agents: AgentService by lazy { AgentServiceImpl(clientOptionsWithUserAgent) }
+
     override fun async(): ZavudevClientAsync = async
 
     override fun withRawResponse(): ZavudevClient.WithRawResponse = withRawResponse
@@ -143,6 +169,16 @@ class ZavudevClientImpl(private val clientOptions: ClientOptions) : ZavudevClien
     override fun me(): MeService = me
 
     override fun functions(): FunctionService = functions
+
+    override fun conversations(): ConversationService = conversations
+
+    override fun calls(): CallService = calls
+
+    override fun agentTemplates(): AgentTemplateService = agentTemplates
+
+    override fun emailDomains(): EmailDomainService = emailDomains
+
+    override fun agents(): AgentService = agents
 
     override fun close() = clientOptions.close()
 
@@ -213,6 +249,26 @@ class ZavudevClientImpl(private val clientOptions: ClientOptions) : ZavudevClien
             FunctionServiceImpl.WithRawResponseImpl(clientOptions)
         }
 
+        private val conversations: ConversationService.WithRawResponse by lazy {
+            ConversationServiceImpl.WithRawResponseImpl(clientOptions)
+        }
+
+        private val calls: CallService.WithRawResponse by lazy {
+            CallServiceImpl.WithRawResponseImpl(clientOptions)
+        }
+
+        private val agentTemplates: AgentTemplateService.WithRawResponse by lazy {
+            AgentTemplateServiceImpl.WithRawResponseImpl(clientOptions)
+        }
+
+        private val emailDomains: EmailDomainService.WithRawResponse by lazy {
+            EmailDomainServiceImpl.WithRawResponseImpl(clientOptions)
+        }
+
+        private val agents: AgentService.WithRawResponse by lazy {
+            AgentServiceImpl.WithRawResponseImpl(clientOptions)
+        }
+
         override fun withOptions(
             modifier: Consumer<ClientOptions.Builder>
         ): ZavudevClient.WithRawResponse =
@@ -252,5 +308,15 @@ class ZavudevClientImpl(private val clientOptions: ClientOptions) : ZavudevClien
         override fun me(): MeService.WithRawResponse = me
 
         override fun functions(): FunctionService.WithRawResponse = functions
+
+        override fun conversations(): ConversationService.WithRawResponse = conversations
+
+        override fun calls(): CallService.WithRawResponse = calls
+
+        override fun agentTemplates(): AgentTemplateService.WithRawResponse = agentTemplates
+
+        override fun emailDomains(): EmailDomainService.WithRawResponse = emailDomains
+
+        override fun agents(): AgentService.WithRawResponse = agents
     }
 }

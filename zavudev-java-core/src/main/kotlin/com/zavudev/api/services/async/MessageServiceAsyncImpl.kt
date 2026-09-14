@@ -16,6 +16,8 @@ import com.zavudev.api.core.http.HttpResponseFor
 import com.zavudev.api.core.http.json
 import com.zavudev.api.core.http.parseable
 import com.zavudev.api.core.prepareAsync
+import com.zavudev.api.models.messages.MessageListAttachmentsParams
+import com.zavudev.api.models.messages.MessageListAttachmentsResponse
 import com.zavudev.api.models.messages.MessageListPageAsync
 import com.zavudev.api.models.messages.MessageListPageResponse
 import com.zavudev.api.models.messages.MessageListParams
@@ -54,6 +56,13 @@ class MessageServiceAsyncImpl internal constructor(private val clientOptions: Cl
     ): CompletableFuture<MessageListPageAsync> =
         // get /v1/messages
         withRawResponse().list(params, requestOptions).thenApply { it.parse() }
+
+    override fun listAttachments(
+        params: MessageListAttachmentsParams,
+        requestOptions: RequestOptions,
+    ): CompletableFuture<MessageListAttachmentsResponse> =
+        // get /v1/messages/{messageId}/attachments
+        withRawResponse().listAttachments(params, requestOptions).thenApply { it.parse() }
 
     override fun react(
         params: MessageReactParams,
@@ -155,6 +164,39 @@ class MessageServiceAsyncImpl internal constructor(private val clientOptions: Cl
                                     .params(params)
                                     .response(it)
                                     .build()
+                            }
+                    }
+                }
+        }
+
+        private val listAttachmentsHandler: Handler<MessageListAttachmentsResponse> =
+            jsonHandler<MessageListAttachmentsResponse>(clientOptions.jsonMapper)
+
+        override fun listAttachments(
+            params: MessageListAttachmentsParams,
+            requestOptions: RequestOptions,
+        ): CompletableFuture<HttpResponseFor<MessageListAttachmentsResponse>> {
+            // We check here instead of in the params builder because this can be specified
+            // positionally or in the params class.
+            checkRequired("messageId", params.messageId().getOrNull())
+            val request =
+                HttpRequest.builder()
+                    .method(HttpMethod.GET)
+                    .baseUrl(clientOptions.baseUrl())
+                    .addPathSegments("v1", "messages", params._pathParam(0), "attachments")
+                    .build()
+                    .prepareAsync(clientOptions, params)
+            val requestOptions = requestOptions.applyDefaults(RequestOptions.from(clientOptions))
+            return request
+                .thenComposeAsync { clientOptions.httpClient.executeAsync(it, requestOptions) }
+                .thenApply { response ->
+                    errorHandler.handle(response).parseable {
+                        response
+                            .use { listAttachmentsHandler.handle(it) }
+                            .also {
+                                if (requestOptions.responseValidation!!) {
+                                    it.validate()
+                                }
                             }
                     }
                 }

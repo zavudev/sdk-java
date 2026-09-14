@@ -19,6 +19,23 @@ internal class FunctionCreateParamsTest {
                     .build()
             )
             .description("Replies to order status questions on WhatsApp.")
+            .entrypoint("index.ts")
+            .files(
+                FunctionCreateParams.Files.builder()
+                    .putAdditionalProperty(
+                        "index.ts",
+                        JsonValue.from(
+                            "import { formatOrder } from './lib/orders';\n\nexport default async function handler(event) {\n  return { statusCode: 200, body: formatOrder(event) };\n}\n"
+                        ),
+                    )
+                    .putAdditionalProperty(
+                        "lib/orders.ts",
+                        JsonValue.from(
+                            "export function formatOrder(event) {\n  return JSON.stringify(event);\n}\n"
+                        ),
+                    )
+                    .build()
+            )
             .httpEnabled(true)
             .memoryMb(FunctionCreateParams.MemoryMb._128)
             .runtime(FunctionCreateParams.Runtime.NODEJS24)
@@ -41,6 +58,23 @@ internal class FunctionCreateParamsTest {
                         .build()
                 )
                 .description("Replies to order status questions on WhatsApp.")
+                .entrypoint("index.ts")
+                .files(
+                    FunctionCreateParams.Files.builder()
+                        .putAdditionalProperty(
+                            "index.ts",
+                            JsonValue.from(
+                                "import { formatOrder } from './lib/orders';\n\nexport default async function handler(event) {\n  return { statusCode: 200, body: formatOrder(event) };\n}\n"
+                            ),
+                        )
+                        .putAdditionalProperty(
+                            "lib/orders.ts",
+                            JsonValue.from(
+                                "export function formatOrder(event) {\n  return JSON.stringify(event);\n}\n"
+                            ),
+                        )
+                        .build()
+                )
                 .httpEnabled(true)
                 .memoryMb(FunctionCreateParams.MemoryMb._128)
                 .runtime(FunctionCreateParams.Runtime.NODEJS24)
@@ -61,6 +95,24 @@ internal class FunctionCreateParamsTest {
                     .build()
             )
         assertThat(body.description()).contains("Replies to order status questions on WhatsApp.")
+        assertThat(body.entrypoint()).contains("index.ts")
+        assertThat(body.files())
+            .contains(
+                FunctionCreateParams.Files.builder()
+                    .putAdditionalProperty(
+                        "index.ts",
+                        JsonValue.from(
+                            "import { formatOrder } from './lib/orders';\n\nexport default async function handler(event) {\n  return { statusCode: 200, body: formatOrder(event) };\n}\n"
+                        ),
+                    )
+                    .putAdditionalProperty(
+                        "lib/orders.ts",
+                        JsonValue.from(
+                            "export function formatOrder(event) {\n  return JSON.stringify(event);\n}\n"
+                        ),
+                    )
+                    .build()
+            )
         assertThat(body.httpEnabled()).contains(true)
         assertThat(body.memoryMb()).contains(FunctionCreateParams.MemoryMb._128)
         assertThat(body.runtime()).contains(FunctionCreateParams.Runtime.NODEJS24)

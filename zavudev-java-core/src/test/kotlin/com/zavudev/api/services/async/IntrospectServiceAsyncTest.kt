@@ -3,11 +3,31 @@
 package com.zavudev.api.services.async
 
 import com.zavudev.api.client.okhttp.ZavudevOkHttpClientAsync
+import com.zavudev.api.models.introspect.IntrospectValidateEmailParams
 import com.zavudev.api.models.introspect.IntrospectValidatePhoneParams
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 internal class IntrospectServiceAsyncTest {
+
+    @Disabled("Mock server tests are disabled")
+    @Test
+    fun validateEmail() {
+        val client = ZavudevOkHttpClientAsync.builder().apiKey("My API Key").build()
+        val introspectServiceAsync = client.introspect()
+
+        val responseFuture =
+            introspectServiceAsync.validateEmail(
+                IntrospectValidateEmailParams.builder()
+                    .email("maria@example.com")
+                    .addEmail("maria@example.com")
+                    .addEmail("info@deaddomain.example")
+                    .build()
+            )
+
+        val response = responseFuture.get()
+        response.validate()
+    }
 
     @Disabled("Mock server tests are disabled")
     @Test

@@ -23,12 +23,16 @@ import com.zavudev.api.models.senders.agent.tools.ToolDeleteParams
 import com.zavudev.api.models.senders.agent.tools.ToolListPage
 import com.zavudev.api.models.senders.agent.tools.ToolListPageResponse
 import com.zavudev.api.models.senders.agent.tools.ToolListParams
+import com.zavudev.api.models.senders.agent.tools.ToolListTestRunsParams
+import com.zavudev.api.models.senders.agent.tools.ToolListTestRunsResponse
 import com.zavudev.api.models.senders.agent.tools.ToolRetrieveParams
 import com.zavudev.api.models.senders.agent.tools.ToolRetrieveResponse
 import com.zavudev.api.models.senders.agent.tools.ToolTestParams
 import com.zavudev.api.models.senders.agent.tools.ToolTestResponse
 import com.zavudev.api.models.senders.agent.tools.ToolUpdateParams
 import com.zavudev.api.models.senders.agent.tools.ToolUpdateResponse
+import com.zavudev.api.services.blocking.senders.agent.tools.WebhookService
+import com.zavudev.api.services.blocking.senders.agent.tools.WebhookServiceImpl
 import java.util.function.Consumer
 import kotlin.jvm.optionals.getOrNull
 
@@ -38,10 +42,14 @@ class ToolServiceImpl internal constructor(private val clientOptions: ClientOpti
         WithRawResponseImpl(clientOptions)
     }
 
+    private val webhook: WebhookService by lazy { WebhookServiceImpl(clientOptions) }
+
     override fun withRawResponse(): ToolService.WithRawResponse = withRawResponse
 
     override fun withOptions(modifier: Consumer<ClientOptions.Builder>): ToolService =
         ToolServiceImpl(clientOptions.toBuilder().apply(modifier::accept).build())
+
+    override fun webhook(): WebhookService = webhook
 
     override fun create(
         params: ToolCreateParams,
@@ -73,6 +81,13 @@ class ToolServiceImpl internal constructor(private val clientOptions: ClientOpti
         withRawResponse().delete(params, requestOptions)
     }
 
+    override fun listTestRuns(
+        params: ToolListTestRunsParams,
+        requestOptions: RequestOptions,
+    ): ToolListTestRunsResponse =
+        // get /v1/senders/{senderId}/agent/tools/{toolId}/test-runs
+        withRawResponse().listTestRuns(params, requestOptions).parse()
+
     override fun test(params: ToolTestParams, requestOptions: RequestOptions): ToolTestResponse =
         // post /v1/senders/{senderId}/agent/tools/{toolId}/test
         withRawResponse().test(params, requestOptions).parse()
@@ -83,12 +98,18 @@ class ToolServiceImpl internal constructor(private val clientOptions: ClientOpti
         private val errorHandler: Handler<HttpResponse> =
             errorHandler(errorBodyHandler(clientOptions.jsonMapper))
 
+        private val webhook: WebhookService.WithRawResponse by lazy {
+            WebhookServiceImpl.WithRawResponseImpl(clientOptions)
+        }
+
         override fun withOptions(
             modifier: Consumer<ClientOptions.Builder>
         ): ToolService.WithRawResponse =
             ToolServiceImpl.WithRawResponseImpl(
                 clientOptions.toBuilder().apply(modifier::accept).build()
             )
+
+        override fun webhook(): WebhookService.WithRawResponse = webhook
 
         private val createHandler: Handler<ToolCreateResponse> =
             jsonHandler<ToolCreateResponse>(clientOptions.jsonMapper)
@@ -261,6 +282,44 @@ class ToolServiceImpl internal constructor(private val clientOptions: ClientOpti
             val response = clientOptions.httpClient.execute(request, requestOptions)
             return errorHandler.handle(response).parseable {
                 response.use { deleteHandler.handle(it) }
+            }
+        }
+
+        private val listTestRunsHandler: Handler<ToolListTestRunsResponse> =
+            jsonHandler<ToolListTestRunsResponse>(clientOptions.jsonMapper)
+
+        override fun listTestRuns(
+            params: ToolListTestRunsParams,
+            requestOptions: RequestOptions,
+        ): HttpResponseFor<ToolListTestRunsResponse> {
+            // We check here instead of in the params builder because this can be specified
+            // positionally or in the params class.
+            checkRequired("toolId", params.toolId().getOrNull())
+            val request =
+                HttpRequest.builder()
+                    .method(HttpMethod.GET)
+                    .baseUrl(clientOptions.baseUrl())
+                    .addPathSegments(
+                        "v1",
+                        "senders",
+                        params._pathParam(0),
+                        "agent",
+                        "tools",
+                        params._pathParam(1),
+                        "test-runs",
+                    )
+                    .build()
+                    .prepare(clientOptions, params)
+            val requestOptions = requestOptions.applyDefaults(RequestOptions.from(clientOptions))
+            val response = clientOptions.httpClient.execute(request, requestOptions)
+            return errorHandler.handle(response).parseable {
+                response
+                    .use { listTestRunsHandler.handle(it) }
+                    .also {
+                        if (requestOptions.responseValidation!!) {
+                            it.validate()
+                        }
+                    }
             }
         }
 

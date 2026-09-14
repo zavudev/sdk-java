@@ -41,6 +41,18 @@ internal class MessageServiceAsyncTest {
 
     @Disabled("Mock server tests are disabled")
     @Test
+    fun listAttachments() {
+        val client = ZavudevOkHttpClientAsync.builder().apiKey("My API Key").build()
+        val messageServiceAsync = client.messages()
+
+        val responseFuture = messageServiceAsync.listAttachments("messageId")
+
+        val response = responseFuture.get()
+        response.validate()
+    }
+
+    @Disabled("Mock server tests are disabled")
+    @Test
     fun react() {
         val client = ZavudevOkHttpClientAsync.builder().apiKey("My API Key").build()
         val messageServiceAsync = client.messages()
@@ -107,6 +119,20 @@ internal class MessageServiceAsyncTest {
                             .mediaUrl("https://example.com/image.jpg")
                             .mimeType("image/jpeg")
                             .reactToMessageId("reactToMessageId")
+                            .referral(
+                                MessageContent.Referral.builder()
+                                    .body("body")
+                                    .ctwaClid("ARIzZm9vYmFyY3R3YWNsaWQ")
+                                    .headline("headline")
+                                    .imageUrl("https://example.com")
+                                    .mediaType(MessageContent.Referral.MediaType.IMAGE)
+                                    .sourceId("120210000000000000")
+                                    .sourceType(MessageContent.Referral.SourceType.AD)
+                                    .sourceUrl("https://example.com")
+                                    .thumbnailUrl("https://example.com")
+                                    .videoUrl("https://example.com")
+                                    .build()
+                            )
                             .replyToFrom("replyToFrom")
                             .replyToMessageId("replyToMessageId")
                             .replyToMessageType("replyToMessageType")
