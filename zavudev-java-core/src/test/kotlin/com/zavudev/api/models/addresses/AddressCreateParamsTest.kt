@@ -11,14 +11,14 @@ internal class AddressCreateParamsTest {
     fun create() {
         AddressCreateParams.builder()
             .countryCode("DE")
+            .firstName("John")
+            .lastName("Doe")
             .locality("Berlin")
             .postalCode("10115")
             .streetAddress("123 Main St")
             .administrativeArea("administrativeArea")
             .businessName("businessName")
             .extendedAddress("extendedAddress")
-            .firstName("John")
-            .lastName("Doe")
             .build()
     }
 
@@ -27,27 +27,27 @@ internal class AddressCreateParamsTest {
         val params =
             AddressCreateParams.builder()
                 .countryCode("DE")
+                .firstName("John")
+                .lastName("Doe")
                 .locality("Berlin")
                 .postalCode("10115")
                 .streetAddress("123 Main St")
                 .administrativeArea("administrativeArea")
                 .businessName("businessName")
                 .extendedAddress("extendedAddress")
-                .firstName("John")
-                .lastName("Doe")
                 .build()
 
         val body = params._body()
 
         assertThat(body.countryCode()).isEqualTo("DE")
+        assertThat(body.firstName()).isEqualTo("John")
+        assertThat(body.lastName()).isEqualTo("Doe")
         assertThat(body.locality()).isEqualTo("Berlin")
         assertThat(body.postalCode()).isEqualTo("10115")
         assertThat(body.streetAddress()).isEqualTo("123 Main St")
         assertThat(body.administrativeArea()).contains("administrativeArea")
         assertThat(body.businessName()).contains("businessName")
         assertThat(body.extendedAddress()).contains("extendedAddress")
-        assertThat(body.firstName()).contains("John")
-        assertThat(body.lastName()).contains("Doe")
     }
 
     @Test
@@ -55,6 +55,8 @@ internal class AddressCreateParamsTest {
         val params =
             AddressCreateParams.builder()
                 .countryCode("DE")
+                .firstName("John")
+                .lastName("Doe")
                 .locality("Berlin")
                 .postalCode("10115")
                 .streetAddress("123 Main St")
@@ -63,6 +65,8 @@ internal class AddressCreateParamsTest {
         val body = params._body()
 
         assertThat(body.countryCode()).isEqualTo("DE")
+        assertThat(body.firstName()).isEqualTo("John")
+        assertThat(body.lastName()).isEqualTo("Doe")
         assertThat(body.locality()).isEqualTo("Berlin")
         assertThat(body.postalCode()).isEqualTo("10115")
         assertThat(body.streetAddress()).isEqualTo("123 Main St")
