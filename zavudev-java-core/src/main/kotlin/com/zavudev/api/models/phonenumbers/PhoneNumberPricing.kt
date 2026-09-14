@@ -38,9 +38,9 @@ private constructor(
     ) : this(isFreeEligible, monthlyPrice, upfrontPrice, mutableMapOf())
 
     /**
-     * Whether this number qualifies as the plan-included US number on paid plans. The benefit is
-     * one per account: it is never offered again once claimed, not even after the number is
-     * released.
+     * Whether this number qualifies as the plan-included number: a US or Canadian number (a +1
+     * number) costing $20 a month or less. The benefit is one per account: it is never offered
+     * again once claimed, not even after the number is released.
      *
      * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
      *   server responded with an unexpected value).
@@ -125,9 +125,9 @@ private constructor(
         }
 
         /**
-         * Whether this number qualifies as the plan-included US number on paid plans. The benefit
-         * is one per account: it is never offered again once claimed, not even after the number is
-         * released.
+         * Whether this number qualifies as the plan-included number: a US or Canadian number (a +1
+         * number) costing $20 a month or less. The benefit is one per account: it is never offered
+         * again once claimed, not even after the number is released.
          */
         fun isFreeEligible(isFreeEligible: Boolean) = isFreeEligible(JsonField.of(isFreeEligible))
 

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter
 import com.fasterxml.jackson.annotation.JsonAnySetter
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.zavudev.api.core.Enum
 import com.zavudev.api.core.ExcludeMissing
 import com.zavudev.api.core.JsonField
 import com.zavudev.api.core.JsonMissing
@@ -28,6 +29,7 @@ private constructor(
     private val createdAt: JsonField<OffsetDateTime>,
     private val phoneNumber: JsonField<String>,
     private val pricing: JsonField<OwnedPhoneNumberPricing>,
+    private val regulatoryStatus: JsonField<RegulatoryStatus>,
     private val status: JsonField<PhoneNumberStatus>,
     private val name: JsonField<String>,
     private val nextRenewalDate: JsonField<OffsetDateTime>,
@@ -51,6 +53,9 @@ private constructor(
         @JsonProperty("pricing")
         @ExcludeMissing
         pricing: JsonField<OwnedPhoneNumberPricing> = JsonMissing.of(),
+        @JsonProperty("regulatoryStatus")
+        @ExcludeMissing
+        regulatoryStatus: JsonField<RegulatoryStatus> = JsonMissing.of(),
         @JsonProperty("status")
         @ExcludeMissing
         status: JsonField<PhoneNumberStatus> = JsonMissing.of(),
@@ -68,6 +73,7 @@ private constructor(
         createdAt,
         phoneNumber,
         pricing,
+        regulatoryStatus,
         status,
         name,
         nextRenewalDate,
@@ -107,6 +113,28 @@ private constructor(
     fun pricing(): OwnedPhoneNumberPricing = pricing.getRequired("pricing")
 
     /**
+     * Regulatory review state. Numbers that need no review are `approved` immediately. A number
+     * bought with regulatory information is owned and billed from purchase and starts
+     * `pending_review`; it cannot send messages or place calls until this is `approved`. The state
+     * is re-checked every 6 hours: poll `GET /v1/phone-numbers/{phoneNumberId}` to follow it.
+     *
+     * Assign it to a sender with `PATCH /v1/phone-numbers/{phoneNumberId}` (`senderId`) before or
+     * after approval. A number assigned while under review is recorded and connected to that sender
+     * when it is approved; the connection is retried until it succeeds. A sender created over the
+     * API is set up for SMS as part of the assignment. `rejected` means review refused the
+     * information: the number cannot be assigned to a sender. A number that stays `pending_review`
+     * may be waiting on information the API cannot supply; contact support.
+     *
+     * @throws ZavudevInvalidDataException if the JSON field has an unexpected type or is
+     *   unexpectedly missing or null (e.g. if the server responded with an unexpected value).
+     */
+    fun regulatoryStatus(): RegulatoryStatus = regulatoryStatus.getRequired("regulatoryStatus")
+
+    /**
+     * Billing state of an owned number, separate from `regulatoryStatus`. `pending` is legacy and
+     * is not written to numbers today. The SDKs carry `active`, `suspended` and `pending` only;
+     * `releasing` and `released` are returned by the REST API until their next release.
+     *
      * @throws ZavudevInvalidDataException if the JSON field has an unexpected type or is
      *   unexpectedly missing or null (e.g. if the server responded with an unexpected value).
      */
@@ -182,6 +210,16 @@ private constructor(
     fun _pricing(): JsonField<OwnedPhoneNumberPricing> = pricing
 
     /**
+     * Returns the raw JSON value of [regulatoryStatus].
+     *
+     * Unlike [regulatoryStatus], this method doesn't throw if the JSON field has an unexpected
+     * type.
+     */
+    @JsonProperty("regulatoryStatus")
+    @ExcludeMissing
+    fun _regulatoryStatus(): JsonField<RegulatoryStatus> = regulatoryStatus
+
+    /**
      * Returns the raw JSON value of [status].
      *
      * Unlike [status], this method doesn't throw if the JSON field has an unexpected type.
@@ -244,6 +282,7 @@ private constructor(
          * .createdAt()
          * .phoneNumber()
          * .pricing()
+         * .regulatoryStatus()
          * .status()
          * ```
          */
@@ -258,6 +297,7 @@ private constructor(
         private var createdAt: JsonField<OffsetDateTime>? = null
         private var phoneNumber: JsonField<String>? = null
         private var pricing: JsonField<OwnedPhoneNumberPricing>? = null
+        private var regulatoryStatus: JsonField<RegulatoryStatus>? = null
         private var status: JsonField<PhoneNumberStatus>? = null
         private var name: JsonField<String> = JsonMissing.of()
         private var nextRenewalDate: JsonField<OffsetDateTime> = JsonMissing.of()
@@ -272,6 +312,7 @@ private constructor(
             createdAt = ownedPhoneNumber.createdAt
             phoneNumber = ownedPhoneNumber.phoneNumber
             pricing = ownedPhoneNumber.pricing
+            regulatoryStatus = ownedPhoneNumber.regulatoryStatus
             status = ownedPhoneNumber.status
             name = ownedPhoneNumber.name
             nextRenewalDate = ownedPhoneNumber.nextRenewalDate
@@ -348,6 +389,39 @@ private constructor(
          */
         fun pricing(pricing: JsonField<OwnedPhoneNumberPricing>) = apply { this.pricing = pricing }
 
+        /**
+         * Regulatory review state. Numbers that need no review are `approved` immediately. A number
+         * bought with regulatory information is owned and billed from purchase and starts
+         * `pending_review`; it cannot send messages or place calls until this is `approved`. The
+         * state is re-checked every 6 hours: poll `GET /v1/phone-numbers/{phoneNumberId}` to follow
+         * it.
+         *
+         * Assign it to a sender with `PATCH /v1/phone-numbers/{phoneNumberId}` (`senderId`) before
+         * or after approval. A number assigned while under review is recorded and connected to that
+         * sender when it is approved; the connection is retried until it succeeds. A sender created
+         * over the API is set up for SMS as part of the assignment. `rejected` means review refused
+         * the information: the number cannot be assigned to a sender. A number that stays
+         * `pending_review` may be waiting on information the API cannot supply; contact support.
+         */
+        fun regulatoryStatus(regulatoryStatus: RegulatoryStatus) =
+            regulatoryStatus(JsonField.of(regulatoryStatus))
+
+        /**
+         * Sets [Builder.regulatoryStatus] to an arbitrary JSON value.
+         *
+         * You should usually call [Builder.regulatoryStatus] with a well-typed [RegulatoryStatus]
+         * value instead. This method is primarily for setting the field to an undocumented or not
+         * yet supported value.
+         */
+        fun regulatoryStatus(regulatoryStatus: JsonField<RegulatoryStatus>) = apply {
+            this.regulatoryStatus = regulatoryStatus
+        }
+
+        /**
+         * Billing state of an owned number, separate from `regulatoryStatus`. `pending` is legacy
+         * and is not written to numbers today. The SDKs carry `active`, `suspended` and `pending`
+         * only; `releasing` and `released` are returned by the REST API until their next release.
+         */
         fun status(status: PhoneNumberStatus) = status(JsonField.of(status))
 
         /**
@@ -437,6 +511,7 @@ private constructor(
          * .createdAt()
          * .phoneNumber()
          * .pricing()
+         * .regulatoryStatus()
          * .status()
          * ```
          *
@@ -449,6 +524,7 @@ private constructor(
                 checkRequired("createdAt", createdAt),
                 checkRequired("phoneNumber", phoneNumber),
                 checkRequired("pricing", pricing),
+                checkRequired("regulatoryStatus", regulatoryStatus),
                 checkRequired("status", status),
                 name,
                 nextRenewalDate,
@@ -478,6 +554,7 @@ private constructor(
         createdAt()
         phoneNumber()
         pricing().validate()
+        regulatoryStatus().validate()
         status().validate()
         name()
         nextRenewalDate()
@@ -506,11 +583,169 @@ private constructor(
             (if (createdAt.asKnown().isPresent) 1 else 0) +
             (if (phoneNumber.asKnown().isPresent) 1 else 0) +
             (pricing.asKnown().getOrNull()?.validity() ?: 0) +
+            (regulatoryStatus.asKnown().getOrNull()?.validity() ?: 0) +
             (status.asKnown().getOrNull()?.validity() ?: 0) +
             (if (name.asKnown().isPresent) 1 else 0) +
             (if (nextRenewalDate.asKnown().isPresent) 1 else 0) +
             (if (senderId.asKnown().isPresent) 1 else 0) +
             (if (updatedAt.asKnown().isPresent) 1 else 0)
+
+    /**
+     * Regulatory review state. Numbers that need no review are `approved` immediately. A number
+     * bought with regulatory information is owned and billed from purchase and starts
+     * `pending_review`; it cannot send messages or place calls until this is `approved`. The state
+     * is re-checked every 6 hours: poll `GET /v1/phone-numbers/{phoneNumberId}` to follow it.
+     *
+     * Assign it to a sender with `PATCH /v1/phone-numbers/{phoneNumberId}` (`senderId`) before or
+     * after approval. A number assigned while under review is recorded and connected to that sender
+     * when it is approved; the connection is retried until it succeeds. A sender created over the
+     * API is set up for SMS as part of the assignment. `rejected` means review refused the
+     * information: the number cannot be assigned to a sender. A number that stays `pending_review`
+     * may be waiting on information the API cannot supply; contact support.
+     */
+    class RegulatoryStatus @JsonCreator private constructor(private val value: JsonField<String>) :
+        Enum {
+
+        /**
+         * Returns this class instance's raw value.
+         *
+         * This is usually only useful if this instance was deserialized from data that doesn't
+         * match any known member, and you want to know that value. For example, if the SDK is on an
+         * older version than the API, then the API may respond with new members that the SDK is
+         * unaware of.
+         */
+        @com.fasterxml.jackson.annotation.JsonValue fun _value(): JsonField<String> = value
+
+        companion object {
+
+            @JvmField val APPROVED = of("approved")
+
+            @JvmField val PENDING_REVIEW = of("pending_review")
+
+            @JvmField val REJECTED = of("rejected")
+
+            @JvmStatic fun of(value: String) = RegulatoryStatus(JsonField.of(value))
+        }
+
+        /** An enum containing [RegulatoryStatus]'s known values. */
+        enum class Known {
+            APPROVED,
+            PENDING_REVIEW,
+            REJECTED,
+        }
+
+        /**
+         * An enum containing [RegulatoryStatus]'s known values, as well as an [_UNKNOWN] member.
+         *
+         * An instance of [RegulatoryStatus] can contain an unknown value in a couple of cases:
+         * - It was deserialized from data that doesn't match any known member. For example, if the
+         *   SDK is on an older version than the API, then the API may respond with new members that
+         *   the SDK is unaware of.
+         * - It was constructed with an arbitrary value using the [of] method.
+         */
+        enum class Value {
+            APPROVED,
+            PENDING_REVIEW,
+            REJECTED,
+            /**
+             * An enum member indicating that [RegulatoryStatus] was instantiated with an unknown
+             * value.
+             */
+            _UNKNOWN,
+        }
+
+        /**
+         * Returns an enum member corresponding to this class instance's value, or [Value._UNKNOWN]
+         * if the class was instantiated with an unknown value.
+         *
+         * Use the [known] method instead if you're certain the value is always known or if you want
+         * to throw for the unknown case.
+         */
+        fun value(): Value =
+            when (this) {
+                APPROVED -> Value.APPROVED
+                PENDING_REVIEW -> Value.PENDING_REVIEW
+                REJECTED -> Value.REJECTED
+                else -> Value._UNKNOWN
+            }
+
+        /**
+         * Returns an enum member corresponding to this class instance's value.
+         *
+         * Use the [value] method instead if you're uncertain the value is always known and don't
+         * want to throw for the unknown case.
+         *
+         * @throws ZavudevInvalidDataException if this class instance's value is a not a known
+         *   member.
+         */
+        fun known(): Known =
+            when (this) {
+                APPROVED -> Known.APPROVED
+                PENDING_REVIEW -> Known.PENDING_REVIEW
+                REJECTED -> Known.REJECTED
+                else -> throw ZavudevInvalidDataException("Unknown RegulatoryStatus: $value")
+            }
+
+        /**
+         * Returns this class instance's primitive wire representation.
+         *
+         * This differs from the [toString] method because that method is primarily for debugging
+         * and generally doesn't throw.
+         *
+         * @throws ZavudevInvalidDataException if this class instance's value does not have the
+         *   expected primitive type.
+         */
+        fun asString(): String =
+            _value().asString().orElseThrow { ZavudevInvalidDataException("Value is not a String") }
+
+        private var validated: Boolean = false
+
+        /**
+         * Validates that the types of all values in this object match their expected types
+         * recursively.
+         *
+         * This method is _not_ forwards compatible with new types from the API for existing fields.
+         *
+         * @throws ZavudevInvalidDataException if any value type in this object doesn't match its
+         *   expected type.
+         */
+        fun validate(): RegulatoryStatus = apply {
+            if (validated) {
+                return@apply
+            }
+
+            known()
+            validated = true
+        }
+
+        fun isValid(): Boolean =
+            try {
+                validate()
+                true
+            } catch (e: ZavudevInvalidDataException) {
+                false
+            }
+
+        /**
+         * Returns a score indicating how many valid values are contained in this object
+         * recursively.
+         *
+         * Used for best match union deserialization.
+         */
+        @JvmSynthetic internal fun validity(): Int = if (value() == Value._UNKNOWN) 0 else 1
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) {
+                return true
+            }
+
+            return other is RegulatoryStatus && value == other.value
+        }
+
+        override fun hashCode() = value.hashCode()
+
+        override fun toString() = value.toString()
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) {
@@ -523,6 +758,7 @@ private constructor(
             createdAt == other.createdAt &&
             phoneNumber == other.phoneNumber &&
             pricing == other.pricing &&
+            regulatoryStatus == other.regulatoryStatus &&
             status == other.status &&
             name == other.name &&
             nextRenewalDate == other.nextRenewalDate &&
@@ -538,6 +774,7 @@ private constructor(
             createdAt,
             phoneNumber,
             pricing,
+            regulatoryStatus,
             status,
             name,
             nextRenewalDate,
@@ -550,5 +787,5 @@ private constructor(
     override fun hashCode(): Int = hashCode
 
     override fun toString() =
-        "OwnedPhoneNumber{id=$id, capabilities=$capabilities, createdAt=$createdAt, phoneNumber=$phoneNumber, pricing=$pricing, status=$status, name=$name, nextRenewalDate=$nextRenewalDate, senderId=$senderId, updatedAt=$updatedAt, additionalProperties=$additionalProperties}"
+        "OwnedPhoneNumber{id=$id, capabilities=$capabilities, createdAt=$createdAt, phoneNumber=$phoneNumber, pricing=$pricing, regulatoryStatus=$regulatoryStatus, status=$status, name=$name, nextRenewalDate=$nextRenewalDate, senderId=$senderId, updatedAt=$updatedAt, additionalProperties=$additionalProperties}"
 }

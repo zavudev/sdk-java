@@ -47,6 +47,8 @@ private constructor(
     ) : this(id, description, name, type, acceptanceCriteria, example, mutableMapOf())
 
     /**
+     * Send this as `requirementType` in `regulatoryRequirements` when purchasing.
+     *
      * @throws ZavudevInvalidDataException if the JSON field has an unexpected type or is
      *   unexpectedly missing or null (e.g. if the server responded with an unexpected value).
      */
@@ -182,6 +184,7 @@ private constructor(
             additionalProperties = requirementType.additionalProperties.toMutableMap()
         }
 
+        /** Send this as `requirementType` in `regulatoryRequirements` when purchasing. */
         fun id(id: String) = id(JsonField.of(id))
 
         /**

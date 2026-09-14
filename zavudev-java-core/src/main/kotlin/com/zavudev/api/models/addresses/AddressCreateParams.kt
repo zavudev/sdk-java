@@ -20,8 +20,8 @@ import java.util.Objects
 import java.util.Optional
 
 /**
- * Create a regulatory address for phone number purchases. Some countries require a verified address
- * before phone numbers can be activated.
+ * Create a regulatory address, to use as the value of an `address` requirement when buying a phone
+ * number. It is registered for review when it is created, with status `pending`.
  */
 class AddressCreateParams
 private constructor(
@@ -35,6 +35,22 @@ private constructor(
      *   unexpectedly missing or null (e.g. if the server responded with an unexpected value).
      */
     fun countryCode(): String = body.countryCode()
+
+    /**
+     * First name of the person the address is registered to.
+     *
+     * @throws ZavudevInvalidDataException if the JSON field has an unexpected type or is
+     *   unexpectedly missing or null (e.g. if the server responded with an unexpected value).
+     */
+    fun firstName(): String = body.firstName()
+
+    /**
+     * Last name of the person the address is registered to.
+     *
+     * @throws ZavudevInvalidDataException if the JSON field has an unexpected type or is
+     *   unexpectedly missing or null (e.g. if the server responded with an unexpected value).
+     */
+    fun lastName(): String = body.lastName()
 
     /**
      * @throws ZavudevInvalidDataException if the JSON field has an unexpected type or is
@@ -61,6 +77,8 @@ private constructor(
     fun administrativeArea(): Optional<String> = body.administrativeArea()
 
     /**
+     * Business name, when the address belongs to a business. Defaults to the person's full name.
+     *
      * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
      *   server responded with an unexpected value).
      */
@@ -73,23 +91,25 @@ private constructor(
     fun extendedAddress(): Optional<String> = body.extendedAddress()
 
     /**
-     * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
-     *   server responded with an unexpected value).
-     */
-    fun firstName(): Optional<String> = body.firstName()
-
-    /**
-     * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
-     *   server responded with an unexpected value).
-     */
-    fun lastName(): Optional<String> = body.lastName()
-
-    /**
      * Returns the raw JSON value of [countryCode].
      *
      * Unlike [countryCode], this method doesn't throw if the JSON field has an unexpected type.
      */
     fun _countryCode(): JsonField<String> = body._countryCode()
+
+    /**
+     * Returns the raw JSON value of [firstName].
+     *
+     * Unlike [firstName], this method doesn't throw if the JSON field has an unexpected type.
+     */
+    fun _firstName(): JsonField<String> = body._firstName()
+
+    /**
+     * Returns the raw JSON value of [lastName].
+     *
+     * Unlike [lastName], this method doesn't throw if the JSON field has an unexpected type.
+     */
+    fun _lastName(): JsonField<String> = body._lastName()
 
     /**
      * Returns the raw JSON value of [locality].
@@ -134,20 +154,6 @@ private constructor(
      */
     fun _extendedAddress(): JsonField<String> = body._extendedAddress()
 
-    /**
-     * Returns the raw JSON value of [firstName].
-     *
-     * Unlike [firstName], this method doesn't throw if the JSON field has an unexpected type.
-     */
-    fun _firstName(): JsonField<String> = body._firstName()
-
-    /**
-     * Returns the raw JSON value of [lastName].
-     *
-     * Unlike [lastName], this method doesn't throw if the JSON field has an unexpected type.
-     */
-    fun _lastName(): JsonField<String> = body._lastName()
-
     fun _additionalBodyProperties(): Map<String, JsonValue> = body._additionalProperties()
 
     /** Additional headers to send with the request. */
@@ -166,6 +172,8 @@ private constructor(
          * The following fields are required:
          * ```java
          * .countryCode()
+         * .firstName()
+         * .lastName()
          * .locality()
          * .postalCode()
          * .streetAddress()
@@ -194,10 +202,10 @@ private constructor(
          * This is generally only useful if you are already constructing the body separately.
          * Otherwise, it's more convenient to use the top-level setters instead:
          * - [countryCode]
+         * - [firstName]
+         * - [lastName]
          * - [locality]
          * - [postalCode]
-         * - [streetAddress]
-         * - [administrativeArea]
          * - etc.
          */
         fun body(body: Body) = apply { this.body = body.toBuilder() }
@@ -212,6 +220,29 @@ private constructor(
          * value.
          */
         fun countryCode(countryCode: JsonField<String>) = apply { body.countryCode(countryCode) }
+
+        /** First name of the person the address is registered to. */
+        fun firstName(firstName: String) = apply { body.firstName(firstName) }
+
+        /**
+         * Sets [Builder.firstName] to an arbitrary JSON value.
+         *
+         * You should usually call [Builder.firstName] with a well-typed [String] value instead.
+         * This method is primarily for setting the field to an undocumented or not yet supported
+         * value.
+         */
+        fun firstName(firstName: JsonField<String>) = apply { body.firstName(firstName) }
+
+        /** Last name of the person the address is registered to. */
+        fun lastName(lastName: String) = apply { body.lastName(lastName) }
+
+        /**
+         * Sets [Builder.lastName] to an arbitrary JSON value.
+         *
+         * You should usually call [Builder.lastName] with a well-typed [String] value instead. This
+         * method is primarily for setting the field to an undocumented or not yet supported value.
+         */
+        fun lastName(lastName: JsonField<String>) = apply { body.lastName(lastName) }
 
         fun locality(locality: String) = apply { body.locality(locality) }
 
@@ -262,6 +293,10 @@ private constructor(
             body.administrativeArea(administrativeArea)
         }
 
+        /**
+         * Business name, when the address belongs to a business. Defaults to the person's full
+         * name.
+         */
         fun businessName(businessName: String) = apply { body.businessName(businessName) }
 
         /**
@@ -289,27 +324,6 @@ private constructor(
         fun extendedAddress(extendedAddress: JsonField<String>) = apply {
             body.extendedAddress(extendedAddress)
         }
-
-        fun firstName(firstName: String) = apply { body.firstName(firstName) }
-
-        /**
-         * Sets [Builder.firstName] to an arbitrary JSON value.
-         *
-         * You should usually call [Builder.firstName] with a well-typed [String] value instead.
-         * This method is primarily for setting the field to an undocumented or not yet supported
-         * value.
-         */
-        fun firstName(firstName: JsonField<String>) = apply { body.firstName(firstName) }
-
-        fun lastName(lastName: String) = apply { body.lastName(lastName) }
-
-        /**
-         * Sets [Builder.lastName] to an arbitrary JSON value.
-         *
-         * You should usually call [Builder.lastName] with a well-typed [String] value instead. This
-         * method is primarily for setting the field to an undocumented or not yet supported value.
-         */
-        fun lastName(lastName: JsonField<String>) = apply { body.lastName(lastName) }
 
         fun additionalBodyProperties(additionalBodyProperties: Map<String, JsonValue>) = apply {
             body.additionalProperties(additionalBodyProperties)
@@ -436,6 +450,8 @@ private constructor(
          * The following fields are required:
          * ```java
          * .countryCode()
+         * .firstName()
+         * .lastName()
          * .locality()
          * .postalCode()
          * .streetAddress()
@@ -457,18 +473,23 @@ private constructor(
 
     override fun _queryParams(): QueryParams = additionalQueryParams
 
+    /**
+     * A regulatory address. `firstName` and `lastName` are required: the carrier will not register
+     * an address without a named person. Requests that omit them are refused with `400
+     * invalid_request`, and the SDKs still type them as optional until their next release.
+     */
     class Body
     @JsonCreator(mode = JsonCreator.Mode.DISABLED)
     private constructor(
         private val countryCode: JsonField<String>,
+        private val firstName: JsonField<String>,
+        private val lastName: JsonField<String>,
         private val locality: JsonField<String>,
         private val postalCode: JsonField<String>,
         private val streetAddress: JsonField<String>,
         private val administrativeArea: JsonField<String>,
         private val businessName: JsonField<String>,
         private val extendedAddress: JsonField<String>,
-        private val firstName: JsonField<String>,
-        private val lastName: JsonField<String>,
         private val additionalProperties: MutableMap<String, JsonValue>,
     ) {
 
@@ -477,6 +498,12 @@ private constructor(
             @JsonProperty("countryCode")
             @ExcludeMissing
             countryCode: JsonField<String> = JsonMissing.of(),
+            @JsonProperty("firstName")
+            @ExcludeMissing
+            firstName: JsonField<String> = JsonMissing.of(),
+            @JsonProperty("lastName")
+            @ExcludeMissing
+            lastName: JsonField<String> = JsonMissing.of(),
             @JsonProperty("locality")
             @ExcludeMissing
             locality: JsonField<String> = JsonMissing.of(),
@@ -495,20 +522,16 @@ private constructor(
             @JsonProperty("extendedAddress")
             @ExcludeMissing
             extendedAddress: JsonField<String> = JsonMissing.of(),
-            @JsonProperty("firstName")
-            @ExcludeMissing
-            firstName: JsonField<String> = JsonMissing.of(),
-            @JsonProperty("lastName") @ExcludeMissing lastName: JsonField<String> = JsonMissing.of(),
         ) : this(
             countryCode,
+            firstName,
+            lastName,
             locality,
             postalCode,
             streetAddress,
             administrativeArea,
             businessName,
             extendedAddress,
-            firstName,
-            lastName,
             mutableMapOf(),
         )
 
@@ -517,6 +540,22 @@ private constructor(
          *   unexpectedly missing or null (e.g. if the server responded with an unexpected value).
          */
         fun countryCode(): String = countryCode.getRequired("countryCode")
+
+        /**
+         * First name of the person the address is registered to.
+         *
+         * @throws ZavudevInvalidDataException if the JSON field has an unexpected type or is
+         *   unexpectedly missing or null (e.g. if the server responded with an unexpected value).
+         */
+        fun firstName(): String = firstName.getRequired("firstName")
+
+        /**
+         * Last name of the person the address is registered to.
+         *
+         * @throws ZavudevInvalidDataException if the JSON field has an unexpected type or is
+         *   unexpectedly missing or null (e.g. if the server responded with an unexpected value).
+         */
+        fun lastName(): String = lastName.getRequired("lastName")
 
         /**
          * @throws ZavudevInvalidDataException if the JSON field has an unexpected type or is
@@ -544,6 +583,9 @@ private constructor(
             administrativeArea.getOptional("administrativeArea")
 
         /**
+         * Business name, when the address belongs to a business. Defaults to the person's full
+         * name.
+         *
          * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
          *   server responded with an unexpected value).
          */
@@ -556,18 +598,6 @@ private constructor(
         fun extendedAddress(): Optional<String> = extendedAddress.getOptional("extendedAddress")
 
         /**
-         * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
-         *   server responded with an unexpected value).
-         */
-        fun firstName(): Optional<String> = firstName.getOptional("firstName")
-
-        /**
-         * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
-         *   server responded with an unexpected value).
-         */
-        fun lastName(): Optional<String> = lastName.getOptional("lastName")
-
-        /**
          * Returns the raw JSON value of [countryCode].
          *
          * Unlike [countryCode], this method doesn't throw if the JSON field has an unexpected type.
@@ -575,6 +605,20 @@ private constructor(
         @JsonProperty("countryCode")
         @ExcludeMissing
         fun _countryCode(): JsonField<String> = countryCode
+
+        /**
+         * Returns the raw JSON value of [firstName].
+         *
+         * Unlike [firstName], this method doesn't throw if the JSON field has an unexpected type.
+         */
+        @JsonProperty("firstName") @ExcludeMissing fun _firstName(): JsonField<String> = firstName
+
+        /**
+         * Returns the raw JSON value of [lastName].
+         *
+         * Unlike [lastName], this method doesn't throw if the JSON field has an unexpected type.
+         */
+        @JsonProperty("lastName") @ExcludeMissing fun _lastName(): JsonField<String> = lastName
 
         /**
          * Returns the raw JSON value of [locality].
@@ -632,20 +676,6 @@ private constructor(
         @ExcludeMissing
         fun _extendedAddress(): JsonField<String> = extendedAddress
 
-        /**
-         * Returns the raw JSON value of [firstName].
-         *
-         * Unlike [firstName], this method doesn't throw if the JSON field has an unexpected type.
-         */
-        @JsonProperty("firstName") @ExcludeMissing fun _firstName(): JsonField<String> = firstName
-
-        /**
-         * Returns the raw JSON value of [lastName].
-         *
-         * Unlike [lastName], this method doesn't throw if the JSON field has an unexpected type.
-         */
-        @JsonProperty("lastName") @ExcludeMissing fun _lastName(): JsonField<String> = lastName
-
         @JsonAnySetter
         private fun putAdditionalProperty(key: String, value: JsonValue) {
             additionalProperties.put(key, value)
@@ -666,6 +696,8 @@ private constructor(
              * The following fields are required:
              * ```java
              * .countryCode()
+             * .firstName()
+             * .lastName()
              * .locality()
              * .postalCode()
              * .streetAddress()
@@ -678,27 +710,27 @@ private constructor(
         class Builder internal constructor() {
 
             private var countryCode: JsonField<String>? = null
+            private var firstName: JsonField<String>? = null
+            private var lastName: JsonField<String>? = null
             private var locality: JsonField<String>? = null
             private var postalCode: JsonField<String>? = null
             private var streetAddress: JsonField<String>? = null
             private var administrativeArea: JsonField<String> = JsonMissing.of()
             private var businessName: JsonField<String> = JsonMissing.of()
             private var extendedAddress: JsonField<String> = JsonMissing.of()
-            private var firstName: JsonField<String> = JsonMissing.of()
-            private var lastName: JsonField<String> = JsonMissing.of()
             private var additionalProperties: MutableMap<String, JsonValue> = mutableMapOf()
 
             @JvmSynthetic
             internal fun from(body: Body) = apply {
                 countryCode = body.countryCode
+                firstName = body.firstName
+                lastName = body.lastName
                 locality = body.locality
                 postalCode = body.postalCode
                 streetAddress = body.streetAddress
                 administrativeArea = body.administrativeArea
                 businessName = body.businessName
                 extendedAddress = body.extendedAddress
-                firstName = body.firstName
-                lastName = body.lastName
                 additionalProperties = body.additionalProperties.toMutableMap()
             }
 
@@ -714,6 +746,30 @@ private constructor(
             fun countryCode(countryCode: JsonField<String>) = apply {
                 this.countryCode = countryCode
             }
+
+            /** First name of the person the address is registered to. */
+            fun firstName(firstName: String) = firstName(JsonField.of(firstName))
+
+            /**
+             * Sets [Builder.firstName] to an arbitrary JSON value.
+             *
+             * You should usually call [Builder.firstName] with a well-typed [String] value instead.
+             * This method is primarily for setting the field to an undocumented or not yet
+             * supported value.
+             */
+            fun firstName(firstName: JsonField<String>) = apply { this.firstName = firstName }
+
+            /** Last name of the person the address is registered to. */
+            fun lastName(lastName: String) = lastName(JsonField.of(lastName))
+
+            /**
+             * Sets [Builder.lastName] to an arbitrary JSON value.
+             *
+             * You should usually call [Builder.lastName] with a well-typed [String] value instead.
+             * This method is primarily for setting the field to an undocumented or not yet
+             * supported value.
+             */
+            fun lastName(lastName: JsonField<String>) = apply { this.lastName = lastName }
 
             fun locality(locality: String) = locality(JsonField.of(locality))
 
@@ -764,6 +820,10 @@ private constructor(
                 this.administrativeArea = administrativeArea
             }
 
+            /**
+             * Business name, when the address belongs to a business. Defaults to the person's full
+             * name.
+             */
             fun businessName(businessName: String) = businessName(JsonField.of(businessName))
 
             /**
@@ -790,28 +850,6 @@ private constructor(
             fun extendedAddress(extendedAddress: JsonField<String>) = apply {
                 this.extendedAddress = extendedAddress
             }
-
-            fun firstName(firstName: String) = firstName(JsonField.of(firstName))
-
-            /**
-             * Sets [Builder.firstName] to an arbitrary JSON value.
-             *
-             * You should usually call [Builder.firstName] with a well-typed [String] value instead.
-             * This method is primarily for setting the field to an undocumented or not yet
-             * supported value.
-             */
-            fun firstName(firstName: JsonField<String>) = apply { this.firstName = firstName }
-
-            fun lastName(lastName: String) = lastName(JsonField.of(lastName))
-
-            /**
-             * Sets [Builder.lastName] to an arbitrary JSON value.
-             *
-             * You should usually call [Builder.lastName] with a well-typed [String] value instead.
-             * This method is primarily for setting the field to an undocumented or not yet
-             * supported value.
-             */
-            fun lastName(lastName: JsonField<String>) = apply { this.lastName = lastName }
 
             fun additionalProperties(additionalProperties: Map<String, JsonValue>) = apply {
                 this.additionalProperties.clear()
@@ -840,6 +878,8 @@ private constructor(
              * The following fields are required:
              * ```java
              * .countryCode()
+             * .firstName()
+             * .lastName()
              * .locality()
              * .postalCode()
              * .streetAddress()
@@ -850,14 +890,14 @@ private constructor(
             fun build(): Body =
                 Body(
                     checkRequired("countryCode", countryCode),
+                    checkRequired("firstName", firstName),
+                    checkRequired("lastName", lastName),
                     checkRequired("locality", locality),
                     checkRequired("postalCode", postalCode),
                     checkRequired("streetAddress", streetAddress),
                     administrativeArea,
                     businessName,
                     extendedAddress,
-                    firstName,
-                    lastName,
                     additionalProperties.toMutableMap(),
                 )
         }
@@ -879,14 +919,14 @@ private constructor(
             }
 
             countryCode()
+            firstName()
+            lastName()
             locality()
             postalCode()
             streetAddress()
             administrativeArea()
             businessName()
             extendedAddress()
-            firstName()
-            lastName()
             validated = true
         }
 
@@ -907,14 +947,14 @@ private constructor(
         @JvmSynthetic
         internal fun validity(): Int =
             (if (countryCode.asKnown().isPresent) 1 else 0) +
+                (if (firstName.asKnown().isPresent) 1 else 0) +
+                (if (lastName.asKnown().isPresent) 1 else 0) +
                 (if (locality.asKnown().isPresent) 1 else 0) +
                 (if (postalCode.asKnown().isPresent) 1 else 0) +
                 (if (streetAddress.asKnown().isPresent) 1 else 0) +
                 (if (administrativeArea.asKnown().isPresent) 1 else 0) +
                 (if (businessName.asKnown().isPresent) 1 else 0) +
-                (if (extendedAddress.asKnown().isPresent) 1 else 0) +
-                (if (firstName.asKnown().isPresent) 1 else 0) +
-                (if (lastName.asKnown().isPresent) 1 else 0)
+                (if (extendedAddress.asKnown().isPresent) 1 else 0)
 
         override fun equals(other: Any?): Boolean {
             if (this === other) {
@@ -923,28 +963,28 @@ private constructor(
 
             return other is Body &&
                 countryCode == other.countryCode &&
+                firstName == other.firstName &&
+                lastName == other.lastName &&
                 locality == other.locality &&
                 postalCode == other.postalCode &&
                 streetAddress == other.streetAddress &&
                 administrativeArea == other.administrativeArea &&
                 businessName == other.businessName &&
                 extendedAddress == other.extendedAddress &&
-                firstName == other.firstName &&
-                lastName == other.lastName &&
                 additionalProperties == other.additionalProperties
         }
 
         private val hashCode: Int by lazy {
             Objects.hash(
                 countryCode,
+                firstName,
+                lastName,
                 locality,
                 postalCode,
                 streetAddress,
                 administrativeArea,
                 businessName,
                 extendedAddress,
-                firstName,
-                lastName,
                 additionalProperties,
             )
         }
@@ -952,7 +992,7 @@ private constructor(
         override fun hashCode(): Int = hashCode
 
         override fun toString() =
-            "Body{countryCode=$countryCode, locality=$locality, postalCode=$postalCode, streetAddress=$streetAddress, administrativeArea=$administrativeArea, businessName=$businessName, extendedAddress=$extendedAddress, firstName=$firstName, lastName=$lastName, additionalProperties=$additionalProperties}"
+            "Body{countryCode=$countryCode, firstName=$firstName, lastName=$lastName, locality=$locality, postalCode=$postalCode, streetAddress=$streetAddress, administrativeArea=$administrativeArea, businessName=$businessName, extendedAddress=$extendedAddress, additionalProperties=$additionalProperties}"
     }
 
     override fun equals(other: Any?): Boolean {

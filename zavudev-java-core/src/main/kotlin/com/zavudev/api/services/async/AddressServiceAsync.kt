@@ -31,8 +31,8 @@ interface AddressServiceAsync {
     fun withOptions(modifier: Consumer<ClientOptions.Builder>): AddressServiceAsync
 
     /**
-     * Create a regulatory address for phone number purchases. Some countries require a verified
-     * address before phone numbers can be activated.
+     * Create a regulatory address, to use as the value of an `address` requirement when buying a
+     * phone number. It is registered for review when it is created, with status `pending`.
      */
     fun create(params: AddressCreateParams): CompletableFuture<AddressCreateResponse> =
         create(params, RequestOptions.none())
@@ -97,7 +97,11 @@ interface AddressServiceAsync {
     fun list(requestOptions: RequestOptions): CompletableFuture<AddressListPageAsync> =
         list(AddressListParams.none(), requestOptions)
 
-    /** Delete a regulatory address. Cannot delete addresses that are in use. */
+    /**
+     * Delete a regulatory address from this project. Any address can be deleted, whatever its
+     * status. Phone numbers already purchased with it are not affected, and neither is information
+     * already submitted for later purchases in its country.
+     */
     fun delete(addressId: String): CompletableFuture<Void?> =
         delete(addressId, AddressDeleteParams.none())
 

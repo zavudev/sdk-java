@@ -19,14 +19,14 @@ internal class AddressServiceAsyncTest {
             addressServiceAsync.create(
                 AddressCreateParams.builder()
                     .countryCode("DE")
+                    .firstName("John")
+                    .lastName("Doe")
                     .locality("Berlin")
                     .postalCode("10115")
                     .streetAddress("123 Main St")
                     .administrativeArea("administrativeArea")
                     .businessName("businessName")
                     .extendedAddress("extendedAddress")
-                    .firstName("John")
-                    .lastName("Doe")
                     .build()
             )
 
