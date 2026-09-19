@@ -27,7 +27,18 @@ private constructor(
 
     fun limit(): Optional<Long> = Optional.ofNullable(limit)
 
-    /** Status of a contact within a broadcast. */
+    /**
+     * Status of a contact within a broadcast.
+     * - `pending`, `queued`, `sending`: not handed to the provider yet.
+     * - `sent`: accepted by the provider; delivery is not confirmed yet. Channels that never report
+     *   delivery leave the recipient here.
+     * - `delivered`: the channel confirmed delivery to the device. A WhatsApp read receipt also
+     *   counts as delivered.
+     * - `failed`: not delivered. A recipient can move from `sent` or `delivered` to `failed` when
+     *   the provider reports a failure late.
+     * - `skipped`: not sent, because the recipient opted out of the channel or the broadcast was
+     *   cancelled before reaching it.
+     */
     fun status(): Optional<BroadcastContactStatus> = Optional.ofNullable(status)
 
     /** Additional headers to send with the request. */
@@ -88,7 +99,18 @@ private constructor(
         /** Alias for calling [Builder.limit] with `limit.orElse(null)`. */
         fun limit(limit: Optional<Long>) = limit(limit.getOrNull())
 
-        /** Status of a contact within a broadcast. */
+        /**
+         * Status of a contact within a broadcast.
+         * - `pending`, `queued`, `sending`: not handed to the provider yet.
+         * - `sent`: accepted by the provider; delivery is not confirmed yet. Channels that never
+         *   report delivery leave the recipient here.
+         * - `delivered`: the channel confirmed delivery to the device. A WhatsApp read receipt also
+         *   counts as delivered.
+         * - `failed`: not delivered. A recipient can move from `sent` or `delivered` to `failed`
+         *   when the provider reports a failure late.
+         * - `skipped`: not sent, because the recipient opted out of the channel or the broadcast
+         *   was cancelled before reaching it.
+         */
         fun status(status: BroadcastContactStatus?) = apply { this.status = status }
 
         /** Alias for calling [Builder.status] with `status.orElse(null)`. */

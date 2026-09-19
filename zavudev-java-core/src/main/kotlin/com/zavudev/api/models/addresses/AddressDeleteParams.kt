@@ -11,7 +11,11 @@ import java.util.Objects
 import java.util.Optional
 import kotlin.jvm.optionals.getOrNull
 
-/** Delete a regulatory address. Cannot delete addresses that are in use. */
+/**
+ * Delete a regulatory address from this project. Any address can be deleted, whatever its status.
+ * Phone numbers already purchased with it are not affected, and neither is information already
+ * submitted for later purchases in its country.
+ */
 class AddressDeleteParams
 private constructor(
     private val addressId: String?,

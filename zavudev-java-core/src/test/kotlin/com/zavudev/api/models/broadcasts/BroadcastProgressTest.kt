@@ -27,6 +27,7 @@ internal class BroadcastProgressTest {
                 .estimatedCompletionAt(OffsetDateTime.parse("2019-12-27T18:11:19.117Z"))
                 .estimatedCost(0.0)
                 .reservedAmount(0.0)
+                .sent(0L)
                 .startedAt(OffsetDateTime.parse("2019-12-27T18:11:19.117Z"))
                 .build()
 
@@ -44,6 +45,7 @@ internal class BroadcastProgressTest {
             .contains(OffsetDateTime.parse("2019-12-27T18:11:19.117Z"))
         assertThat(broadcastProgress.estimatedCost()).contains(0.0)
         assertThat(broadcastProgress.reservedAmount()).contains(0.0)
+        assertThat(broadcastProgress.sent()).contains(0L)
         assertThat(broadcastProgress.startedAt())
             .contains(OffsetDateTime.parse("2019-12-27T18:11:19.117Z"))
     }
@@ -66,6 +68,7 @@ internal class BroadcastProgressTest {
                 .estimatedCompletionAt(OffsetDateTime.parse("2019-12-27T18:11:19.117Z"))
                 .estimatedCost(0.0)
                 .reservedAmount(0.0)
+                .sent(0L)
                 .startedAt(OffsetDateTime.parse("2019-12-27T18:11:19.117Z"))
                 .build()
 

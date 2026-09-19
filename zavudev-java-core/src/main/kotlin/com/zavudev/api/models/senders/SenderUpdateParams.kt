@@ -70,7 +70,9 @@ private constructor(
     fun emailFromName(): Optional<String> = body.emailFromName()
 
     /**
-     * Enable or disable inbound email receiving for this sender.
+     * Enable or disable inbound email receiving for this sender. Enabling requires a verified
+     * inbound MX record on the domain; the request is ignored otherwise, and
+     * `emailReceivingEnabled` comes back `false` on the response. Disabling always applies.
      *
      * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
      *   server responded with an unexpected value).
@@ -80,7 +82,8 @@ private constructor(
     /**
      * Turn the one-way SMS channel on or off. Enabling needs nothing else and takes effect
      * immediately; disabling removes the channel from the sender. Confirm with the `channels` array
-     * on the response.
+     * on the response. Turning the channel on needs nothing, but SENDING on it requires an approved
+     * business verification (KYB): without one every send is refused with `403 kyb_required`.
      *
      * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
      *   server responded with an unexpected value).
@@ -367,7 +370,11 @@ private constructor(
             body.emailFromName(emailFromName)
         }
 
-        /** Enable or disable inbound email receiving for this sender. */
+        /**
+         * Enable or disable inbound email receiving for this sender. Enabling requires a verified
+         * inbound MX record on the domain; the request is ignored otherwise, and
+         * `emailReceivingEnabled` comes back `false` on the response. Disabling always applies.
+         */
         fun emailReceivingEnabled(emailReceivingEnabled: Boolean) = apply {
             body.emailReceivingEnabled(emailReceivingEnabled)
         }
@@ -386,7 +393,9 @@ private constructor(
         /**
          * Turn the one-way SMS channel on or off. Enabling needs nothing else and takes effect
          * immediately; disabling removes the channel from the sender. Confirm with the `channels`
-         * array on the response.
+         * array on the response. Turning the channel on needs nothing, but SENDING on it requires
+         * an approved business verification (KYB): without one every send is refused with `403
+         * kyb_required`.
          */
         fun enableSmsOneway(enableSmsOneway: Boolean) = apply {
             body.enableSmsOneway(enableSmsOneway)
@@ -781,7 +790,9 @@ private constructor(
         fun emailFromName(): Optional<String> = emailFromName.getOptional("emailFromName")
 
         /**
-         * Enable or disable inbound email receiving for this sender.
+         * Enable or disable inbound email receiving for this sender. Enabling requires a verified
+         * inbound MX record on the domain; the request is ignored otherwise, and
+         * `emailReceivingEnabled` comes back `false` on the response. Disabling always applies.
          *
          * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
          *   server responded with an unexpected value).
@@ -792,7 +803,9 @@ private constructor(
         /**
          * Turn the one-way SMS channel on or off. Enabling needs nothing else and takes effect
          * immediately; disabling removes the channel from the sender. Confirm with the `channels`
-         * array on the response.
+         * array on the response. Turning the channel on needs nothing, but SENDING on it requires
+         * an approved business verification (KYB): without one every send is refused with `403
+         * kyb_required`.
          *
          * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
          *   server responded with an unexpected value).
@@ -1112,7 +1125,11 @@ private constructor(
                 this.emailFromName = emailFromName
             }
 
-            /** Enable or disable inbound email receiving for this sender. */
+            /**
+             * Enable or disable inbound email receiving for this sender. Enabling requires a
+             * verified inbound MX record on the domain; the request is ignored otherwise, and
+             * `emailReceivingEnabled` comes back `false` on the response. Disabling always applies.
+             */
             fun emailReceivingEnabled(emailReceivingEnabled: Boolean) =
                 emailReceivingEnabled(JsonField.of(emailReceivingEnabled))
 
@@ -1130,7 +1147,9 @@ private constructor(
             /**
              * Turn the one-way SMS channel on or off. Enabling needs nothing else and takes effect
              * immediately; disabling removes the channel from the sender. Confirm with the
-             * `channels` array on the response.
+             * `channels` array on the response. Turning the channel on needs nothing, but SENDING
+             * on it requires an approved business verification (KYB): without one every send is
+             * refused with `403 kyb_required`.
              */
             fun enableSmsOneway(enableSmsOneway: Boolean) =
                 enableSmsOneway(JsonField.of(enableSmsOneway))
