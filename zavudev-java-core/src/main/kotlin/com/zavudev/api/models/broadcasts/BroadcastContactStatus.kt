@@ -7,7 +7,18 @@ import com.zavudev.api.core.Enum
 import com.zavudev.api.core.JsonField
 import com.zavudev.api.errors.ZavudevInvalidDataException
 
-/** Status of a contact within a broadcast. */
+/**
+ * Status of a contact within a broadcast.
+ * - `pending`, `queued`, `sending`: not handed to the provider yet.
+ * - `sent`: accepted by the provider; delivery is not confirmed yet. Channels that never report
+ *   delivery leave the recipient here.
+ * - `delivered`: the channel confirmed delivery to the device. A WhatsApp read receipt also counts
+ *   as delivered.
+ * - `failed`: not delivered. A recipient can move from `sent` or `delivered` to `failed` when the
+ *   provider reports a failure late.
+ * - `skipped`: not sent, because the recipient opted out of the channel or the broadcast was
+ *   cancelled before reaching it.
+ */
 class BroadcastContactStatus
 @JsonCreator
 private constructor(private val value: JsonField<String>) : Enum {
@@ -29,6 +40,8 @@ private constructor(private val value: JsonField<String>) : Enum {
 
         @JvmField val SENDING = of("sending")
 
+        @JvmField val SENT = of("sent")
+
         @JvmField val DELIVERED = of("delivered")
 
         @JvmField val FAILED = of("failed")
@@ -43,6 +56,7 @@ private constructor(private val value: JsonField<String>) : Enum {
         PENDING,
         QUEUED,
         SENDING,
+        SENT,
         DELIVERED,
         FAILED,
         SKIPPED,
@@ -61,6 +75,7 @@ private constructor(private val value: JsonField<String>) : Enum {
         PENDING,
         QUEUED,
         SENDING,
+        SENT,
         DELIVERED,
         FAILED,
         SKIPPED,
@@ -83,6 +98,7 @@ private constructor(private val value: JsonField<String>) : Enum {
             PENDING -> Value.PENDING
             QUEUED -> Value.QUEUED
             SENDING -> Value.SENDING
+            SENT -> Value.SENT
             DELIVERED -> Value.DELIVERED
             FAILED -> Value.FAILED
             SKIPPED -> Value.SKIPPED
@@ -102,6 +118,7 @@ private constructor(private val value: JsonField<String>) : Enum {
             PENDING -> Known.PENDING
             QUEUED -> Known.QUEUED
             SENDING -> Known.SENDING
+            SENT -> Known.SENT
             DELIVERED -> Known.DELIVERED
             FAILED -> Known.FAILED
             SKIPPED -> Known.SKIPPED
