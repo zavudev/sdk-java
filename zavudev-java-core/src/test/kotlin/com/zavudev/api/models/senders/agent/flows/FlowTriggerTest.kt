@@ -15,12 +15,12 @@ internal class FlowTriggerTest {
         val flowTrigger =
             FlowTrigger.builder()
                 .type(FlowTrigger.Type.KEYWORD)
-                .intent("intent")
+                .intent("quiere saber precios o cotizar")
                 .addKeyword("string")
                 .build()
 
         assertThat(flowTrigger.type()).isEqualTo(FlowTrigger.Type.KEYWORD)
-        assertThat(flowTrigger.intent()).contains("intent")
+        assertThat(flowTrigger.intent()).contains("quiere saber precios o cotizar")
         assertThat(flowTrigger.keywords().getOrNull()).containsExactly("string")
     }
 
@@ -30,7 +30,7 @@ internal class FlowTriggerTest {
         val flowTrigger =
             FlowTrigger.builder()
                 .type(FlowTrigger.Type.KEYWORD)
-                .intent("intent")
+                .intent("quiere saber precios o cotizar")
                 .addKeyword("string")
                 .build()
 
