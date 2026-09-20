@@ -41,7 +41,7 @@ internal class FlowCreateParamsTest {
             .trigger(
                 FlowTrigger.builder()
                     .type(FlowTrigger.Type.KEYWORD)
-                    .intent("intent")
+                    .intent("quiere saber precios o cotizar")
                     .keywords(listOf("info", "pricing", "demo"))
                     .build()
             )
@@ -122,7 +122,7 @@ internal class FlowCreateParamsTest {
                 .trigger(
                     FlowTrigger.builder()
                         .type(FlowTrigger.Type.KEYWORD)
-                        .intent("intent")
+                        .intent("quiere saber precios o cotizar")
                         .keywords(listOf("info", "pricing", "demo"))
                         .build()
                 )
@@ -162,7 +162,7 @@ internal class FlowCreateParamsTest {
             .isEqualTo(
                 FlowTrigger.builder()
                     .type(FlowTrigger.Type.KEYWORD)
-                    .intent("intent")
+                    .intent("quiere saber precios o cotizar")
                     .keywords(listOf("info", "pricing", "demo"))
                     .build()
             )

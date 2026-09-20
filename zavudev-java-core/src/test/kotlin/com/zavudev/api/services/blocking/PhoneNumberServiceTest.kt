@@ -64,6 +64,13 @@ internal class PhoneNumberServiceTest {
                 PhoneNumberPurchaseParams.builder()
                     .phoneNumber("+15551234567")
                     .name("Primary Line")
+                    .addRegulatoryRequirement(
+                        PhoneNumberPurchaseParams.RegulatoryRequirement.builder()
+                            .fieldValue("jd7x2k3m4n5p6q7r8s9t0abc")
+                            .requirementType("8c5b1a2e-0f3d-4f5b-9a61-2c7e4d9b1f10")
+                            .build()
+                    )
+                    .type(PhoneNumberType.LOCAL)
                     .build()
             )
 
@@ -89,6 +96,7 @@ internal class PhoneNumberServiceTest {
             phoneNumberService.requirements(
                 PhoneNumberRequirementsParams.builder()
                     .countryCode("xx")
+                    .phoneNumber("phoneNumber")
                     .type(PhoneNumberType.LOCAL)
                     .build()
             )

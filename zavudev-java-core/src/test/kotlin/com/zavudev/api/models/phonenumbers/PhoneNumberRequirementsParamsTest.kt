@@ -12,6 +12,7 @@ internal class PhoneNumberRequirementsParamsTest {
     fun create() {
         PhoneNumberRequirementsParams.builder()
             .countryCode("xx")
+            .phoneNumber("phoneNumber")
             .type(PhoneNumberType.LOCAL)
             .build()
     }
@@ -21,21 +22,28 @@ internal class PhoneNumberRequirementsParamsTest {
         val params =
             PhoneNumberRequirementsParams.builder()
                 .countryCode("xx")
+                .phoneNumber("phoneNumber")
                 .type(PhoneNumberType.LOCAL)
                 .build()
 
         val queryParams = params._queryParams()
 
         assertThat(queryParams)
-            .isEqualTo(QueryParams.builder().put("countryCode", "xx").put("type", "local").build())
+            .isEqualTo(
+                QueryParams.builder()
+                    .put("countryCode", "xx")
+                    .put("phoneNumber", "phoneNumber")
+                    .put("type", "local")
+                    .build()
+            )
     }
 
     @Test
     fun queryParamsWithoutOptionalFields() {
-        val params = PhoneNumberRequirementsParams.builder().countryCode("xx").build()
+        val params = PhoneNumberRequirementsParams.builder().build()
 
         val queryParams = params._queryParams()
 
-        assertThat(queryParams).isEqualTo(QueryParams.builder().put("countryCode", "xx").build())
+        assertThat(queryParams).isEqualTo(QueryParams.builder().build())
     }
 }

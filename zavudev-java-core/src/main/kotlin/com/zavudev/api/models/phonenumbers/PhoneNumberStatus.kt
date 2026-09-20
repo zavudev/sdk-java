@@ -7,6 +7,11 @@ import com.zavudev.api.core.Enum
 import com.zavudev.api.core.JsonField
 import com.zavudev.api.errors.ZavudevInvalidDataException
 
+/**
+ * Billing state of an owned number, separate from `regulatoryStatus`. `pending` is legacy and is
+ * not written to numbers today. The SDKs carry `active`, `suspended` and `pending` only;
+ * `releasing` and `released` are returned by the REST API until their next release.
+ */
 class PhoneNumberStatus @JsonCreator private constructor(private val value: JsonField<String>) :
     Enum {
 
@@ -27,6 +32,10 @@ class PhoneNumberStatus @JsonCreator private constructor(private val value: Json
 
         @JvmField val PENDING = of("pending")
 
+        @JvmField val RELEASING = of("releasing")
+
+        @JvmField val RELEASED = of("released")
+
         @JvmStatic fun of(value: String) = PhoneNumberStatus(JsonField.of(value))
     }
 
@@ -35,6 +44,8 @@ class PhoneNumberStatus @JsonCreator private constructor(private val value: Json
         ACTIVE,
         SUSPENDED,
         PENDING,
+        RELEASING,
+        RELEASED,
     }
 
     /**
@@ -50,6 +61,8 @@ class PhoneNumberStatus @JsonCreator private constructor(private val value: Json
         ACTIVE,
         SUSPENDED,
         PENDING,
+        RELEASING,
+        RELEASED,
         /**
          * An enum member indicating that [PhoneNumberStatus] was instantiated with an unknown
          * value.
@@ -69,6 +82,8 @@ class PhoneNumberStatus @JsonCreator private constructor(private val value: Json
             ACTIVE -> Value.ACTIVE
             SUSPENDED -> Value.SUSPENDED
             PENDING -> Value.PENDING
+            RELEASING -> Value.RELEASING
+            RELEASED -> Value.RELEASED
             else -> Value._UNKNOWN
         }
 
@@ -85,6 +100,8 @@ class PhoneNumberStatus @JsonCreator private constructor(private val value: Json
             ACTIVE -> Known.ACTIVE
             SUSPENDED -> Known.SUSPENDED
             PENDING -> Known.PENDING
+            RELEASING -> Known.RELEASING
+            RELEASED -> Known.RELEASED
             else -> throw ZavudevInvalidDataException("Unknown PhoneNumberStatus: $value")
         }
 

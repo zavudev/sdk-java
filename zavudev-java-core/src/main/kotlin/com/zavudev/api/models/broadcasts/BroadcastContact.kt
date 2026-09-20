@@ -113,6 +113,15 @@ private constructor(
 
     /**
      * Status of a contact within a broadcast.
+     * - `pending`, `queued`, `sending`: not handed to the provider yet.
+     * - `sent`: accepted by the provider; delivery is not confirmed yet. Channels that never report
+     *   delivery leave the recipient here.
+     * - `delivered`: the channel confirmed delivery to the device. A WhatsApp read receipt also
+     *   counts as delivered.
+     * - `failed`: not delivered. A recipient can move from `sent` or `delivered` to `failed` when
+     *   the provider reports a failure late.
+     * - `skipped`: not sent, because the recipient opted out of the channel or the broadcast was
+     *   cancelled before reaching it.
      *
      * @throws ZavudevInvalidDataException if the JSON field has an unexpected type or is
      *   unexpectedly missing or null (e.g. if the server responded with an unexpected value).
@@ -392,7 +401,18 @@ private constructor(
             this.recipientType = recipientType
         }
 
-        /** Status of a contact within a broadcast. */
+        /**
+         * Status of a contact within a broadcast.
+         * - `pending`, `queued`, `sending`: not handed to the provider yet.
+         * - `sent`: accepted by the provider; delivery is not confirmed yet. Channels that never
+         *   report delivery leave the recipient here.
+         * - `delivered`: the channel confirmed delivery to the device. A WhatsApp read receipt also
+         *   counts as delivered.
+         * - `failed`: not delivered. A recipient can move from `sent` or `delivered` to `failed`
+         *   when the provider reports a failure late.
+         * - `skipped`: not sent, because the recipient opted out of the channel or the broadcast
+         *   was cancelled before reaching it.
+         */
         fun status(status: BroadcastContactStatus) = status(JsonField.of(status))
 
         /**
