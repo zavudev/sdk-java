@@ -82,8 +82,7 @@ private constructor(
     /**
      * Turn the one-way SMS channel on or off. Enabling needs nothing else and takes effect
      * immediately; disabling removes the channel from the sender. Confirm with the `channels` array
-     * on the response. Turning the channel on needs nothing, but SENDING on it requires an approved
-     * business verification (KYB): without one every send is refused with `403 kyb_required`.
+     * on the response.
      *
      * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
      *   server responded with an unexpected value).
@@ -393,9 +392,7 @@ private constructor(
         /**
          * Turn the one-way SMS channel on or off. Enabling needs nothing else and takes effect
          * immediately; disabling removes the channel from the sender. Confirm with the `channels`
-         * array on the response. Turning the channel on needs nothing, but SENDING on it requires
-         * an approved business verification (KYB): without one every send is refused with `403
-         * kyb_required`.
+         * array on the response.
          */
         fun enableSmsOneway(enableSmsOneway: Boolean) = apply {
             body.enableSmsOneway(enableSmsOneway)
@@ -803,9 +800,7 @@ private constructor(
         /**
          * Turn the one-way SMS channel on or off. Enabling needs nothing else and takes effect
          * immediately; disabling removes the channel from the sender. Confirm with the `channels`
-         * array on the response. Turning the channel on needs nothing, but SENDING on it requires
-         * an approved business verification (KYB): without one every send is refused with `403
-         * kyb_required`.
+         * array on the response.
          *
          * @throws ZavudevInvalidDataException if the JSON field has an unexpected type (e.g. if the
          *   server responded with an unexpected value).
@@ -1147,9 +1142,7 @@ private constructor(
             /**
              * Turn the one-way SMS channel on or off. Enabling needs nothing else and takes effect
              * immediately; disabling removes the channel from the sender. Confirm with the
-             * `channels` array on the response. Turning the channel on needs nothing, but SENDING
-             * on it requires an approved business verification (KYB): without one every send is
-             * refused with `403 kyb_required`.
+             * `channels` array on the response.
              */
             fun enableSmsOneway(enableSmsOneway: Boolean) =
                 enableSmsOneway(JsonField.of(enableSmsOneway))
