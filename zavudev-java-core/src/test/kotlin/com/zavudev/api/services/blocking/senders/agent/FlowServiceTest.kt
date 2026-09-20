@@ -55,7 +55,7 @@ internal class FlowServiceTest {
                     .trigger(
                         FlowTrigger.builder()
                             .type(FlowTrigger.Type.KEYWORD)
-                            .intent("intent")
+                            .intent("quiere saber precios o cotizar")
                             .keywords(listOf("info", "pricing", "demo"))
                             .build()
                     )
@@ -112,7 +112,7 @@ internal class FlowServiceTest {
                     .trigger(
                         FlowTrigger.builder()
                             .type(FlowTrigger.Type.KEYWORD)
-                            .intent("intent")
+                            .intent("quiere saber precios o cotizar")
                             .addKeyword("string")
                             .build()
                     )

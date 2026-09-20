@@ -38,7 +38,7 @@ internal class FlowUpdateResponseTest {
                         .trigger(
                             FlowTrigger.builder()
                                 .type(FlowTrigger.Type.KEYWORD)
-                                .intent("intent")
+                                .intent("quiere saber precios o cotizar")
                                 .addKeyword("string")
                                 .build()
                         )
@@ -72,7 +72,7 @@ internal class FlowUpdateResponseTest {
                     .trigger(
                         FlowTrigger.builder()
                             .type(FlowTrigger.Type.KEYWORD)
-                            .intent("intent")
+                            .intent("quiere saber precios o cotizar")
                             .addKeyword("string")
                             .build()
                     )
@@ -110,7 +110,7 @@ internal class FlowUpdateResponseTest {
                         .trigger(
                             FlowTrigger.builder()
                                 .type(FlowTrigger.Type.KEYWORD)
-                                .intent("intent")
+                                .intent("quiere saber precios o cotizar")
                                 .addKeyword("string")
                                 .build()
                         )
