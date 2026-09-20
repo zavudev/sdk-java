@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.2.0 (2026-09-20)
+
+Full Changelog: [v0.1.0...v0.2.0](https://github.com/zavudev/sdk-java/compare/v0.1.0...v0.2.0)
+
+### Features
+
+* **api:** api update ([8d94b3b](https://github.com/zavudev/sdk-java/commit/8d94b3b64de17b3e94cfd935bf9c416ce4437d77))
+* **api:** api update ([6107940](https://github.com/zavudev/sdk-java/commit/6107940c8b99bd302f9ed4211a0bccab2e78923f))
+* **api:** api update ([7748dd6](https://github.com/zavudev/sdk-java/commit/7748dd6ff9175ae75ed5d2c9b6af5fd1e16b0372))
+* **api:** api update ([8b1f225](https://github.com/zavudev/sdk-java/commit/8b1f22566c925547009c6d63ede39c02503ab3eb))
+* **api:** api update ([75d9ef7](https://github.com/zavudev/sdk-java/commit/75d9ef775eb56a728f73c7ebbcb374fee5f723a8))
+* **api:** api update ([c753d6f](https://github.com/zavudev/sdk-java/commit/c753d6fa443975494d1229007d0cef73f8cb10bd))
+* **api:** api update ([39d685e](https://github.com/zavudev/sdk-java/commit/39d685ef84c834de2011a1109a517fc8403813a4))
+* **api:** api update ([b056ac9](https://github.com/zavudev/sdk-java/commit/b056ac941ed236586bda5182ebba8af9beedbba5))
+* **api:** api update ([dac47a9](https://github.com/zavudev/sdk-java/commit/dac47a994c60a797fa04af20a28e5a2f701903e9))
+* **api:** api update ([0624d56](https://github.com/zavudev/sdk-java/commit/0624d56475faaf8b95cf6a8d1b7578912ed701c1))
+* **api:** api update ([a9e59f9](https://github.com/zavudev/sdk-java/commit/a9e59f96118ea1f4356772648e51a8046cec2b8e))
+
 ## 0.1.0 (2026-09-08)
 
 Full Changelog: [v0.0.1...v0.1.0](https://github.com/zavudev/sdk-java/compare/v0.0.1...v0.1.0)
