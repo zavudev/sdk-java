@@ -11,7 +11,7 @@ configure<PublishingExtension> {
             pom {
                 name.set("Zavu Unified Messaging Layer API")
                 description.set("Unified multi-channel messaging API for Zavu.\n\nSupported channels:\n\n- **SMS**: Simple text messages\n- **WhatsApp**: Rich messaging with media, buttons, lists, CTA URL buttons,\n  location requests, and templates\n- **Telegram**: Bot messaging with text, media, and interactive elements\n- **Email**: Transactional emails via Amazon SES\n\nDesign goals:\n\n- Simple `send()` entrypoint for developers\n- Project-level authentication via Bearer token\n- Support for all WhatsApp message types (text, image, video, audio, document,\n  sticker, location, contact, buttons, list, cta_url, location_request,\n  reaction, template)\n- If a non-text message type is sent, WhatsApp channel is used automatically\n- 24-hour WhatsApp conversation window enforcement\n- Universal `to` field accepts phone numbers (E.164), email addresses, or\n  numeric chat IDs (Telegram/Instagram/Messenger)")
-                url.set("https://docs.zavu.dev")
+                url.set("https://zavu.dev")
 
                 licenses {
                     license {
